@@ -18,11 +18,11 @@ export const Navbar = () => {
         setRole(role)
     }, [])
 
-    const signOutHandler = async(e) => {
+    const signOutHandler = async (e) => {
         e.preventDefault()
         const msg = await delCookie("userid", "username", "token", "role")
-        console.log("msg",msg);
-        if (msg.output!=null || msg.output!=undefined) {
+        console.log("msg", msg);
+        if (msg.output != null || msg.output != undefined) {
             toast(msg.output, {
                 position: "top-right",
                 autoClose: 2000,
@@ -38,7 +38,7 @@ export const Navbar = () => {
             }, 2000);
         }
     }
-    const handleNavigation = (loc)=>{
+    const handleNavigation = (loc) => {
         navigate(loc)
     }
 
@@ -51,21 +51,57 @@ export const Navbar = () => {
                     {uName != "" ? <StyledNavbarTabs onClick={(e) => { signOutHandler(e) }} >
                         SignOut
                     </StyledNavbarTabs> : <></>}
-                    {urole==="student"?<StyledNavbarTabs onClick={()=>{handleNavigation("schoolResult")}}>
+                    {urole === "student" ? <StyledNavbarTabs onClick={() => { handleNavigation("schoolResult") }}>
                         School result
-                    </StyledNavbarTabs>:<></>}
+                    </StyledNavbarTabs> : <></>}
+                    
+                    {urole === "teacher" ?
+                        <StyledNavbarTabs>
+                            Students
+                            <StyledNavbarSubTabs>
+                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("/app/teacher") }}>Add Student</NavbarTabs>
+                                <LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Edit Student</NavbarTabs>
+                                <LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Delete Student</NavbarTabs>
+                            </StyledNavbarSubTabs>
+                        </StyledNavbarTabs> : <></>
+                    }
+                    {urole === "teacher" ?
+                        <StyledNavbarTabs>
+                            Subjects
+                            <StyledNavbarSubTabs>
+                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("/app/teacher") }}>Add Subject</NavbarTabs>
+                                <LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Edit Subject</NavbarTabs>
+                                <LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Delete Subject</NavbarTabs>
+                            </StyledNavbarSubTabs>
+                        </StyledNavbarTabs> : <></>
+                    }
+                    {urole === "teacher" ?
+                        <StyledNavbarTabs>
+                            Exams
+                            <StyledNavbarSubTabs>
+                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("/app/teacher") }}>Add Marks</NavbarTabs>
+                                <LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Edit Marks</NavbarTabs>
+                            </StyledNavbarSubTabs>
+                        </StyledNavbarTabs> : <></>
+                    }
+
                     <StyledNavbarTabs>
                         Profile
-                        {urole==="student"?<StyledNavbarSubTabs>
-                            <NavbarTabs style={{ marginTop: "10px" }} onClick={()=>{handleNavigation("/app/student")}}>Account</NavbarTabs>
+                        {urole === "student" ? <StyledNavbarSubTabs>
+                            <NavbarTabs style={{ marginTop: "10px" }} onClick={() => { handleNavigation("/app/student") }}>Account</NavbarTabs>
                             <LineBreak />
-                            <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Subjects</NavbarTabs>
-                        </StyledNavbarSubTabs>:<></>}
-                        {urole==="teacher"?<StyledNavbarSubTabs>
-                            <NavbarTabs style={{ marginTop: "10px" }} onClick={()=>{handleNavigation("/app/teacher")}}>Account</NavbarTabs>
+                            <NavbarTabs style={{ marginBottom: "10px" }} onClick={() => { handleNavigation("searchSubject") }}>Subjects</NavbarTabs>
+                        </StyledNavbarSubTabs> : <></>}
+                        {urole === "teacher" ? <StyledNavbarSubTabs>
+                            <NavbarTabs style={{ marginTop: "10px" }} onClick={() => { handleNavigation("/app/teacher") }}>Account</NavbarTabs>
                             <LineBreak />
-                            {/* <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Subjects</NavbarTabs> */}
-                        </StyledNavbarSubTabs>:<></>}
+                            <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("reviews")}}>Add Review</NavbarTabs>
+                        </StyledNavbarSubTabs> : <></>}
                     </StyledNavbarTabs>
                 </div>
             </StyledNavbar>

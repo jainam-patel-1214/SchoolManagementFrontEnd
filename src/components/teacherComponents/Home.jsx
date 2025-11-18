@@ -108,7 +108,7 @@ export const TeacherHome = () => {
                                     })}
                                 </tbody>
                             </SubInfo>
-                        </> : <>No review made by any teacher</>}
+                        </> : <>No performance report</>}
                     </div>
                 </div>
             </PerformanceWindow>

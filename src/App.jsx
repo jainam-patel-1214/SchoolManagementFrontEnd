@@ -4,6 +4,7 @@ import { StudentHomePage } from './components/studentComponents/Home'
 import { SchoolResult } from './components/studentComponents/SchoolRes'
 import { SubjectSearch } from './components/studentComponents/Subject'
 import { TeacherHome } from './components/teacherComponents/Home'
+import { ReviewTab } from './components/teacherComponents/Review'
 import './index.css'
 import { Routes, Route } from 'react-router-dom'
 
@@ -21,6 +22,7 @@ function App() {
       </Route>
       <Route path='app/teacher' element={<Navbar />}>
         <Route index element={<TeacherHome />}/>
+        <Route path='reviews' element={<ReviewTab />}></Route>
       </Route>
       {/* <Route path='app/admin'>
       </Route> */}
