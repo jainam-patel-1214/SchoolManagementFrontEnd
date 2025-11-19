@@ -138,6 +138,8 @@ export const SchoolResult = () => {
                 progress: undefined,
                 theme: "light",
             });
+        } finally {
+            e.target.reset();
         }
     };
 
@@ -146,7 +148,7 @@ export const SchoolResult = () => {
             < ToastContainer />
             <SearchParamSection>
                 <div>
-                    <SearchForm action="">
+                    <SearchForm action="" onSubmit={(e) => { fetchData(e) }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="section">
@@ -170,14 +172,14 @@ export const SchoolResult = () => {
                             </span>
                         </div>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
+                        <div>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                        </div>
                     </SearchForm>
                 </div>
-                <div>
-                    <StyledButton ref={buttonComp} onClick={(e) => { fetchData(e) }}>Submit</StyledButton>
-                </div>
             </SearchParamSection>
-            {displayData==="no result found"?<>No Results Found</>:<SearchOutputSection>
-                <SubInfo style={{width:"100%"}}>
+            {displayData === "no result found" ? <span style={{ background: "#fa6c61", padding: "5px" }}>No Results Found</span> : <SearchOutputSection>
+                <SubInfo style={{ width: "100%" }}>
                     <thead>
                         <tr>
                             <th>Student Name</th>

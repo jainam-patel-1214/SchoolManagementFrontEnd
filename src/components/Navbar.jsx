@@ -33,9 +33,9 @@ export const Navbar = () => {
                 progress: undefined,
                 theme: "light",
             })
-            setTimeout(() => {
+            // setTimeout(() => {
                 navigate('/signIn')
-            }, 2000);
+            // }, 2000);
         }
     }
     const handleNavigation = (loc) => {
@@ -59,11 +59,13 @@ export const Navbar = () => {
                         <StyledNavbarTabs>
                             Students
                             <StyledNavbarSubTabs>
-                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("/app/teacher") }}>Add Student</NavbarTabs>
+                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("displayStudent") }}>Display Student</NavbarTabs>
                                 <LineBreak />
-                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Edit Student</NavbarTabs>
+                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("addStudent") }}>Add Student</NavbarTabs>
                                 <LineBreak />
-                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Delete Student</NavbarTabs>
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("editStudent")}}>Edit Student</NavbarTabs>
+                                <LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("deleteStudent")}}>Delete Student</NavbarTabs>
                             </StyledNavbarSubTabs>
                         </StyledNavbarTabs> : <></>
                     }

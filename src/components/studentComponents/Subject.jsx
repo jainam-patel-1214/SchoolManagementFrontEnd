@@ -63,6 +63,8 @@ export const SubjectSearch = () => {
                 progress: undefined,
                 theme: "light",
             });
+        } finally{
+            e.target.reset();
         }
     };
 
@@ -93,7 +95,7 @@ export const SubjectSearch = () => {
         <SearchBoxSection>
             < ToastContainer />
             <SearchParamSection>
-                <SearchForm>
+                <SearchForm onSubmit={(e) => { fetchData(e) }}>
                     <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                         <span>
                             <label htmlFor="std">
@@ -102,7 +104,7 @@ export const SubjectSearch = () => {
                             <input type="number" name="std" placeholder="Enter standard here" onChange={(e) => { changeHandler(e, "grade") }} />
                         </span>
                         <div>
-                            <StyledButton ref={buttonComp} onClick={(e) => { fetchData(e) }}>Submit</StyledButton>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
                         </div>
                     </div>
                     <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>

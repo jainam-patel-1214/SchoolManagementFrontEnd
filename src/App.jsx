@@ -5,6 +5,7 @@ import { SchoolResult } from './components/studentComponents/SchoolRes'
 import { SubjectSearch } from './components/studentComponents/Subject'
 import { TeacherHome } from './components/teacherComponents/Home'
 import { ReviewTab } from './components/teacherComponents/Review'
+import { StudentAddTab, StudentDelTab, StudentEditTab, StudentTab } from './components/teacherComponents/StudentsTab'
 import './index.css'
 import { Routes, Route } from 'react-router-dom'
 
@@ -23,6 +24,10 @@ function App() {
       <Route path='app/teacher' element={<Navbar />}>
         <Route index element={<TeacherHome />}/>
         <Route path='reviews' element={<ReviewTab />}></Route>
+        <Route path='displayStudent' element={<StudentTab />}></Route>
+        <Route path='addStudent' element={<StudentAddTab />}></Route>
+        <Route path='editStudent' element={<StudentEditTab />}></Route>
+        <Route path='deleteStudent' element={<StudentDelTab />}></Route>
       </Route>
       {/* <Route path='app/admin'>
       </Route> */}

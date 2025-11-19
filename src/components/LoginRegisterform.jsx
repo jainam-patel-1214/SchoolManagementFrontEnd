@@ -129,14 +129,14 @@ export const LoginRegisterForm = () => {
                 document.cookie = "token=" + res.data.output + "; expires=" + now.toUTCString();
                 document.cookie = "role=" + res.data.role + "; expires=" + now.toUTCString()
                 if (res.data.role === "student") {
-                    setTimeout(() => {
+                    // setTimeout(() => {
                         navigate("/app/student")
-                    }, 2000)
+                    // }, 2000)
                 }
                 if (res.data.role === "teacher") {
-                    setTimeout(() => {
+                    // setTimeout(() => {
                         navigate("/app/teacher")
-                    }, 2000)
+                    // }, 2000)
                 }
             })
             .catch((err) => {
