@@ -73,11 +73,13 @@ export const Navbar = () => {
                         <StyledNavbarTabs>
                             Subjects
                             <StyledNavbarSubTabs>
-                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("/app/teacher") }}>Add Subject</NavbarTabs>
+                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("displaySubject") }}>List Subject</NavbarTabs>
                                 <LineBreak />
-                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Edit Subject</NavbarTabs>
+                                <NavbarTabs style={{ marginTop: "10px" }} onClick={() => {handleNavigation("addSubject") }}>Add Subject</NavbarTabs>
                                 <LineBreak />
-                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("searchSubject")}}>Delete Subject</NavbarTabs>
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("editSubject")}}>Edit Subject</NavbarTabs>
+                                <LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("deleteSubject")}}>Delete Subject</NavbarTabs>
                             </StyledNavbarSubTabs>
                         </StyledNavbarTabs> : <></>
                     }

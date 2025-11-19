@@ -6,6 +6,7 @@ import { SubjectSearch } from './components/studentComponents/Subject'
 import { TeacherHome } from './components/teacherComponents/Home'
 import { ReviewTab } from './components/teacherComponents/Review'
 import { StudentAddTab, StudentDelTab, StudentEditTab, StudentTab } from './components/teacherComponents/StudentsTab'
+import { SubAddTab, SubDelTab, SubEditTab, SubTab } from './components/teacherComponents/SubjectTab'
 import './index.css'
 import { Routes, Route } from 'react-router-dom'
 
@@ -28,6 +29,10 @@ function App() {
         <Route path='addStudent' element={<StudentAddTab />}></Route>
         <Route path='editStudent' element={<StudentEditTab />}></Route>
         <Route path='deleteStudent' element={<StudentDelTab />}></Route>
+        <Route path='displaySubject' element={<SubTab />}></Route>
+        <Route path='addSubject' element={<SubAddTab />}></Route>
+        <Route path='editSubject' element={<SubEditTab />}></Route>
+        <Route path='deleteSubject' element={<SubDelTab />}></Route>
       </Route>
       {/* <Route path='app/admin'>
       </Route> */}

@@ -99,7 +99,7 @@ export const SubjectSearch = () => {
                     <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                         <span>
                             <label htmlFor="std">
-                                Provide grade of class you wish to check result:
+                                Provide grade of class you wish to check subject:
                             </label>
                             <input type="number" name="std" placeholder="Enter standard here" onChange={(e) => { changeHandler(e, "grade") }} />
                         </span>
