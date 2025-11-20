@@ -46,7 +46,7 @@ export const LoginRegisterForm = () => {
         // console.log(userId,pwd);
     };
 
-    const handleSignUp = (e) => {
+    const handleSignUp = async(e) => {
         e.preventDefault();
         console.log(name, pwd, role);
         if (role === "") {
@@ -58,7 +58,7 @@ export const LoginRegisterForm = () => {
             return;
         }
         try {
-            axios
+            await axios
             .post(
                 "http://localhost:8090/register",
                 { yourName: name, password: pwd, roleReq: role },
@@ -100,7 +100,7 @@ export const LoginRegisterForm = () => {
             setValidInp(false)}
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         console.log(userId, pwd);
         if (userId === "" || pwd === "") {
@@ -108,7 +108,7 @@ export const LoginRegisterForm = () => {
             return;
         }
         try {
-            axios
+            await axios
             .post(
                 "http://localhost:8090/login",
                 { userId: userId, password: pwd },
