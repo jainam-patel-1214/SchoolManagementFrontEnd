@@ -2,14 +2,14 @@ import styled from "styled-components"
 import { useState, useEffect } from "react"
 import { Label, LabelValue, PerformanceWindow, StudentHomeSection, StudentInfo, SubInfo, TableEntry, Value } from "../studentComponents/Home"
 import { ToastContainer,toast } from "react-toastify"
-export const TeacherHome = () => {
+export const TeacherHome = (props) => {
     const [displayData, setDisplayData] = useState({})
     const [displayReport, setDisplayReport] = useState({})
 
     useEffect(() => {
             const fetchReport = async () => {
                 try {
-                    const resp = await fetch('http://localhost:8090/teacher/displayPerformance', {
+                    const resp = await fetch(`http://localhost:8090/${props.roleOfPerson}/displayPerformance`, {
                         method: 'GET',
                         credentials: 'include',
                     });
@@ -24,7 +24,7 @@ export const TeacherHome = () => {
             };
             const fetchData = async () => {
                 try {
-                    const resp = await fetch('http://localhost:8090/teacher/data', {
+                    const resp = await fetch(`http://localhost:8090/${props.roleOfPerson}/data`, {
                         method: 'GET',
                         credentials: 'include',
                     });
