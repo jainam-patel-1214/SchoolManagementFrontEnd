@@ -3,7 +3,7 @@ import { toast, ToastContainer } from "react-toastify"
 import { StyledButton } from "../../styled-components/styledButton"
 import { useEffect, useRef, useState } from "react"
 
-export const ReviewTab = () => {
+export const ReviewTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const inp1 = useRef(null)
@@ -28,7 +28,7 @@ export const ReviewTab = () => {
     const fetchData = async (e) => {
         e.preventDefault()
         try {
-            const apiUrl = 'http://localhost:8090/teacher/addReview';
+            const apiUrl = `http://localhost:8090/${props.roleOfPerson}/addReview`;
 
             const resp = await fetch(apiUrl, {
                 method: 'POST',
