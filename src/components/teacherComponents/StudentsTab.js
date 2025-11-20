@@ -137,7 +137,7 @@ const errorToast = (str) => {
     });
 }
 
-export const StudentTab = () => {
+export const StudentTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grNo, setGrNo] = useState(null)
@@ -167,7 +167,7 @@ export const StudentTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, 'http://localhost:8090/teacher/displayStud', 'GET',{},"fetch data") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/displayStud`, 'GET',{},"fetch data") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="std">
@@ -272,7 +272,7 @@ export const StudentTab = () => {
     )
 }
 
-export const StudentEditTab = () => {
+export const StudentEditTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grNo, setGrNo] = useState(null)
@@ -338,7 +338,7 @@ export const StudentEditTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, 'http://localhost:8090/teacher/updateStud', 'PUT',{"studName":name,"studPwd":pwd,"section":section,"std":std},"editStud") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateStud`, 'PUT',{"studName":name,"studPwd":pwd,"section":section,"std":std},"editStud") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="section">
@@ -386,7 +386,7 @@ export const StudentEditTab = () => {
     )
 }
 
-export const StudentDelTab = () => {
+export const StudentDelTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grNo, setGrNo] = useState(null)
@@ -418,7 +418,7 @@ export const StudentDelTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, 'http://localhost:8090/teacher/delStudent', 'DELETE',{},"delStud") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/delStudent`, 'DELETE',{},"delStud") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="std">
@@ -441,7 +441,7 @@ export const StudentDelTab = () => {
     )
 }
 
-export const StudentAddTab = () => {
+export const StudentAddTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grNo, setGrNo] = useState(null)
@@ -507,7 +507,7 @@ export const StudentAddTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, 'http://localhost:8090/teacher/createStud', 'POST',{"studName":name,"studPwd":pwd,"section":section,"std":std},"addStud") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/createStud`, 'POST',{"studName":name,"studPwd":pwd,"section":section,"std":std},"addStud") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="section">
