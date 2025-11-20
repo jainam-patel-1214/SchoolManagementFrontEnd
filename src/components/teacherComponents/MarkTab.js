@@ -124,7 +124,7 @@ const errorToast = (str) => {
     });
 }
 
-export const MarkEditTab = () => {
+export const MarkEditTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grNo, setGrNo] = useState(null)
@@ -187,7 +187,7 @@ export const MarkEditTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, 'http://localhost:8090/teacher/updateMarks', 'PUT', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "editMark") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateMarks`, 'PUT', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "editMark") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="section">
@@ -227,7 +227,7 @@ export const MarkEditTab = () => {
     )
 }
 
-export const MarkAddTab = () => {
+export const MarkAddTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grNo, setGrNo] = useState(null)
@@ -289,7 +289,7 @@ export const MarkAddTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, 'http://localhost:8090/teacher/enterMarks', 'POST', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "addMark") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/enterMarks`, 'POST', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "addMark") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="section">
