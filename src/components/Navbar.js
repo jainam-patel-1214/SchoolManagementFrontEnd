@@ -7,7 +7,7 @@ import delCookie from "../utils/delCookie"
 import { useNavigate } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 
-export const Navbar = () => {
+export const Navbar = (props) => {
     const navigate = useNavigate()
     const [uName, setuName] = useState('')
     const [urole, setRole] = useState('')
@@ -102,7 +102,7 @@ export const Navbar = () => {
                             <NavbarTabs style={{ marginBottom: "10px" }} onClick={() => { handleNavigation("searchSubject") }}>Subjects</NavbarTabs>
                         </StyledNavbarSubTabs> : <></>}
                         {urole === "teacher" ? <StyledNavbarSubTabs>
-                            <NavbarTabs style={{ marginTop: "10px" }} onClick={() => { handleNavigation("/app/teacher") }}>Account</NavbarTabs>
+                            <NavbarTabs style={{ marginTop: "10px" }} onClick={() => { handleNavigation(`/app/${props.roleOfPerson}`) }}>Account</NavbarTabs>
                             <LineBreak />
                             <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("reviews")}}>Add Review</NavbarTabs>
                         </StyledNavbarSubTabs> : <></>}
