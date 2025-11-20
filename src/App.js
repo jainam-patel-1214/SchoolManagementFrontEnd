@@ -23,22 +23,34 @@ function App() {
         <Route path='schoolResult' element={<SchoolResult />}></Route>
         <Route path='searchSubject' element={<SubjectSearch />}></Route>
       </Route>
-      <Route path='app/teacher' element={<Navbar />}>
-        <Route index element={<TeacherHome />}/>
-        <Route path='reviews' element={<ReviewTab />}></Route>
-        <Route path='displayStudent' element={<StudentTab />}></Route>
-        <Route path='addStudent' element={<StudentAddTab />}></Route>
-        <Route path='editStudent' element={<StudentEditTab />}></Route>
-        <Route path='deleteStudent' element={<StudentDelTab />}></Route>
-        <Route path='displaySubject' element={<SubTab />}></Route>
-        <Route path='addSubject' element={<SubAddTab />}></Route>
-        <Route path='editSubject' element={<SubEditTab />}></Route>
-        <Route path='deleteSubject' element={<SubDelTab />}></Route>
-        <Route path='enterMarks' element={<MarkAddTab />}></Route>
-        <Route path='editMarks' element={<MarkEditTab />}></Route>
+      <Route path='app/teacher' element={<Navbar roleOfPerson="teacher" />}>
+        <Route index element={<TeacherHome roleOfPerson="teacher" />}/>
+        <Route path='reviews' element={<ReviewTab roleOfPerson="teacher"/>}></Route>
+        <Route path='displayStudent' element={<StudentTab roleOfPerson="teacher"/>}></Route>
+        <Route path='addStudent' element={<StudentAddTab roleOfPerson="teacher"/>}></Route>
+        <Route path='editStudent' element={<StudentEditTab roleOfPerson="teacher"/>}></Route>
+        <Route path='deleteStudent' element={<StudentDelTab roleOfPerson="teacher"/>}></Route>
+        <Route path='displaySubject' element={<SubTab roleOfPerson="teacher"/>}></Route>
+        <Route path='addSubject' element={<SubAddTab roleOfPerson="teacher"/>}></Route>
+        <Route path='editSubject' element={<SubEditTab roleOfPerson="teacher"/>}></Route>
+        <Route path='deleteSubject' element={<SubDelTab roleOfPerson="teacher"/>}></Route>
+        <Route path='enterMarks' element={<MarkAddTab roleOfPerson="teacher"/>}></Route>
+        <Route path='editMarks' element={<MarkEditTab roleOfPerson="teacher"/>}></Route>
       </Route>
-      {/* <Route path='app/admin'>
-      </Route> */}
+      <Route path='app/admin'>
+        <Route index element={<TeacherHome roleOfPerson="admin" />}/>
+        <Route path='reviews' element={<ReviewTab roleOfPerson="admin"/>}></Route>
+        <Route path='displayStudent' element={<StudentTab roleOfPerson="admin"/>}></Route>
+        <Route path='addStudent' element={<StudentAddTab roleOfPerson="admin"/>}></Route>
+        <Route path='editStudent' element={<StudentEditTab roleOfPerson="admin"/>}></Route>
+        <Route path='deleteStudent' element={<StudentDelTab roleOfPerson="admin"/>}></Route>
+        <Route path='displaySubject' element={<SubTab roleOfPerson="admin"/>}></Route>
+        <Route path='addSubject' element={<SubAddTab roleOfPerson="admin"/>}></Route>
+        <Route path='editSubject' element={<SubEditTab roleOfPerson="admin"/>}></Route>
+        <Route path='deleteSubject' element={<SubDelTab roleOfPerson="admin"/>}></Route>
+        <Route path='enterMarks' element={<MarkAddTab roleOfPerson="admin"/>}></Route>
+        <Route path='editMarks' element={<MarkEditTab roleOfPerson="admin"/>}></Route>
+      </Route>
     </Routes>
   )
 }
