@@ -115,7 +115,7 @@ export const LoginRegisterForm = () => {
                 { headers: { "Content-Type": "application/json" } }
             )
             .then((res) => {
-                // console.log("res", res.data.output, res.data.username, res.data.role);
+                console.log("res", res.data.output, res.data.username, res.data.role);
                 toast.success('Login Successful!', {
                     position: "top-right",
                     autoClose: 2000,
@@ -135,14 +135,13 @@ export const LoginRegisterForm = () => {
                 document.cookie = "token=" + res.data.output + "; expires=" + now.toUTCString();
                 document.cookie = "role=" + res.data.role + "; expires=" + now.toUTCString()
                 if (res.data.role === "student") {
-                    // setTimeout(() => {
-                        navigate("/app/student")
-                    // }, 2000)
+                    navigate("/app/student")
                 }
                 if (res.data.role === "teacher") {
-                    // setTimeout(() => {
-                        navigate("/app/teacher")
-                    // }, 2000)
+                    navigate("/app/teacher")
+                }
+                if (res.data.role === "admin") {
+                    navigate("/app/admin")
                 }
             })
             .catch((err) => {

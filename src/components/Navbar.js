@@ -55,7 +55,7 @@ export const Navbar = (props) => {
                         School result
                     </StyledNavbarTabs> : <></>}
                     
-                    {urole === "teacher" ?
+                    {urole === "teacher"  || urole === "admin" ?
                         <StyledNavbarTabs>
                             Students
                             <StyledNavbarSubTabs>
@@ -69,7 +69,7 @@ export const Navbar = (props) => {
                             </StyledNavbarSubTabs>
                         </StyledNavbarTabs> : <></>
                     }
-                    {urole === "teacher" ?
+                    {urole === "teacher" || urole === "admin" ?
                         <StyledNavbarTabs>
                             Subjects
                             <StyledNavbarSubTabs>
@@ -80,10 +80,12 @@ export const Navbar = (props) => {
                                 <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("editSubject")}}>Edit Subject</NavbarTabs>
                                 <LineBreak />
                                 <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("deleteSubject")}}>Delete Subject</NavbarTabs>
+                                {urole==="admin"?<><LineBreak />
+                                <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("setSubjectLimit")}}>Subject Limit</NavbarTabs></>:<></>}
                             </StyledNavbarSubTabs>
                         </StyledNavbarTabs> : <></>
                     }
-                    {urole === "teacher" ?
+                    {urole === "teacher" || urole === "admin" ?
                         <StyledNavbarTabs>
                             Exams
                             <StyledNavbarSubTabs>
@@ -105,6 +107,10 @@ export const Navbar = (props) => {
                             <NavbarTabs style={{ marginTop: "10px" }} onClick={() => { handleNavigation(`/app/${props.roleOfPerson}`) }}>Account</NavbarTabs>
                             <LineBreak />
                             <NavbarTabs style={{ marginBottom: "10px" }} onClick={()=>{handleNavigation("reviews")}}>Add Review</NavbarTabs>
+                        </StyledNavbarSubTabs> : <></>}
+                        {urole === "admin" ? <StyledNavbarSubTabs>
+                            <NavbarTabs style={{ marginTop: "10px" }} onClick={() => { handleNavigation(`/app/${props.roleOfPerson}`) }}>Account</NavbarTabs>
+                            <LineBreak />
                         </StyledNavbarSubTabs> : <></>}
                     </StyledNavbarTabs>
                 </div>

@@ -1,3 +1,5 @@
+import { AdminHome } from './components/adminComponents/Home'
+import { SubjectLImit } from './components/adminComponents/SubLim'
 import { Navbar } from './components/Navbar'
 import { SignIn } from './components/Signin'
 import { StudentHomePage } from './components/studentComponents/Home'
@@ -18,7 +20,7 @@ function App() {
     <Routes>
       <Route index element={<SignIn />}></Route>
       <Route path="signIn" element={<SignIn />}></Route>
-      <Route path="app/student" element={<Navbar />}>
+      <Route path="app/student" element={<Navbar roleOfPerson="student"/>}>
         <Route index element={<StudentHomePage />}/>
         <Route path='schoolResult' element={<SchoolResult />}></Route>
         <Route path='searchSubject' element={<SubjectSearch />}></Route>
@@ -37,8 +39,8 @@ function App() {
         <Route path='enterMarks' element={<MarkAddTab roleOfPerson="teacher"/>}></Route>
         <Route path='editMarks' element={<MarkEditTab roleOfPerson="teacher"/>}></Route>
       </Route>
-      <Route path='app/admin'>
-        <Route index element={<TeacherHome roleOfPerson="admin" />}/>
+      <Route path='app/admin' element={<Navbar roleOfPerson="admin" />}>
+        <Route index element={<AdminHome roleOfPerson="admin" />}/>
         <Route path='reviews' element={<ReviewTab roleOfPerson="admin"/>}></Route>
         <Route path='displayStudent' element={<StudentTab roleOfPerson="admin"/>}></Route>
         <Route path='addStudent' element={<StudentAddTab roleOfPerson="admin"/>}></Route>
@@ -48,6 +50,7 @@ function App() {
         <Route path='addSubject' element={<SubAddTab roleOfPerson="admin"/>}></Route>
         <Route path='editSubject' element={<SubEditTab roleOfPerson="admin"/>}></Route>
         <Route path='deleteSubject' element={<SubDelTab roleOfPerson="admin"/>}></Route>
+        <Route path='setSubjectLimit' element={<SubjectLImit roleOfPerson="admin"/>}></Route>
         <Route path='enterMarks' element={<MarkAddTab roleOfPerson="admin"/>}></Route>
         <Route path='editMarks' element={<MarkEditTab roleOfPerson="admin"/>}></Route>
       </Route>

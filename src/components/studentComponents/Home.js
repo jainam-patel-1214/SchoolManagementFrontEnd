@@ -31,6 +31,7 @@ export const TableEntry = styled.td`
 export const LabelValue = styled.div`
     display: flex;
     flex-direction: row;
+    justify-content: center;
     width: 100%;
 `
 export const Label = styled.p`
