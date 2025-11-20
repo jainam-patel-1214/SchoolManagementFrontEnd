@@ -130,7 +130,7 @@ const errorToast = (str) => {
     });
 }
 
-export const SubTab = () => {
+export const SubTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grade, setGrade] = useState(null)
@@ -160,7 +160,7 @@ export const SubTab = () => {
             <SearchBoxSection>
             < ToastContainer />
             <SearchParamSection>
-                <SearchForm onSubmit={(e) => { fetchData(e,grade,setGrade,setDisplayData,"http://localhost:8090/teacher/displaySub","GET",{},"fetch data") }}>
+                <SearchForm onSubmit={(e) => { fetchData(e,grade,setGrade,setDisplayData,`http://localhost:8090/${props.roleOfPerson}/displaySub`,"GET",{},"fetch data") }}>
                     <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                         <span>
                             <label htmlFor="std">
@@ -206,7 +206,7 @@ export const SubTab = () => {
     )
 }
 
-export const SubEditTab = () => {
+export const SubEditTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grade, setGrade] = useState(null)
@@ -265,7 +265,7 @@ export const SubEditTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, 'http://localhost:8090/teacher/updateSub', 'PUT',{"subId":subId,"subName":name,"credits":credits,"levelStd":grade},"editSub") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateSub`, 'PUT',{"subId":subId,"subName":name,"credits":credits,"levelStd":grade},"editSub") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="subid">
@@ -307,7 +307,7 @@ export const SubEditTab = () => {
     )
 }
 
-export const SubDelTab = () => {
+export const SubDelTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [subid, setSubId] = useState(null)
@@ -337,7 +337,7 @@ export const SubDelTab = () => {
             <SearchBoxSection>
             < ToastContainer />
             <SearchParamSection>
-                <SearchForm onSubmit={(e) => { fetchData(e,subid,setSubId,setDisplayData,"http://localhost:8090/teacher/delSubject","DELETE",{},"delSub") }}>
+                <SearchForm onSubmit={(e) => { fetchData(e,subid,setSubId,setDisplayData,`http://localhost:8090/${props.roleOfPerson}/delSubject`,"DELETE",{},"delSub") }}>
                     <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                         <span>
                             <label htmlFor="subid">
@@ -362,7 +362,7 @@ export const SubDelTab = () => {
     )
 }
 
-export const SubAddTab = () => {
+export const SubAddTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [grade, setGrade] = useState(null)
@@ -422,7 +422,7 @@ export const SubAddTab = () => {
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, 'http://localhost:8090/teacher/createSub', 'POST',{"subId":subId,"subName":name,"credits":credits,"levelStd":grade},"addSub") }}>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/createSub`, 'POST',{"subId":subId,"subName":name,"credits":credits,"levelStd":grade},"addSub") }}>
                         <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
                             <span>
                                 <label htmlFor="subid">
