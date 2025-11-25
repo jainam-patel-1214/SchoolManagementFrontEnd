@@ -166,7 +166,7 @@ export const SubTab = (props) => {
                             <label htmlFor="std">
                                 Provide grade of class you wish to check subject:
                             </label>
-                            <input type="number" name="std" placeholder="Enter standard here" onChange={(e) => { changeHandler(e, "grade") }} />
+                            <input type="number" name="std" placeholder="Enter standard here" onChange={(e) => { changeHandler(e) }} />
                         </span>
                         <div>
                             <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>

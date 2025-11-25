@@ -1,5 +1,6 @@
-import { AdminHome } from './components/adminComponents/Home'
+import { AdminHome, AdminPendingReqTab } from './components/adminComponents/Home'
 import { SubjectLImit } from './components/adminComponents/SubLim'
+import { TeacherAddTab, TeacherDelTab, TeacherEditTab, TeacherPerformance } from './components/adminComponents/TeachersTab'
 import { Navbar } from './components/Navbar'
 import { SignIn } from './components/Signin'
 import { StudentHomePage } from './components/studentComponents/Home'
@@ -53,6 +54,11 @@ function App() {
         <Route path='setSubjectLimit' element={<SubjectLImit roleOfPerson="admin"/>}></Route>
         <Route path='enterMarks' element={<MarkAddTab roleOfPerson="admin"/>}></Route>
         <Route path='editMarks' element={<MarkEditTab roleOfPerson="admin"/>}></Route>
+        <Route path='teacherPerformance' element={<TeacherPerformance roleOfPerson="admin"/>}></Route>
+        <Route path='addTeacher' element={<TeacherAddTab roleOfPerson="admin"/>}></Route>
+        <Route path='editTeacher' element={<TeacherEditTab roleOfPerson="admin"/>}></Route>
+        <Route path='delTeacher' element={<TeacherDelTab roleOfPerson="admin"/>}></Route>
+        <Route path='pendingApplications' element={<AdminPendingReqTab roleOfPerson="admin"/>}></Route>
       </Route>
     </Routes>
   )

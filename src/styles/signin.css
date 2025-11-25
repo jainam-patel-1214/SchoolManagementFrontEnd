@@ -82,7 +82,7 @@
     border-left: none;
     border-right: none;
     margin-bottom: 1rem;
-    font-size: x-large;
+    font-size: large;
 }
 
 #loginform input::placeholder,
