@@ -2,7 +2,11 @@ import styled from "styled-components"
 import { ErrorSpan, SearchBoxSection, SearchForm, SearchOutputSection, SearchParamSection } from "../studentComponents/SchoolRes"
 import { toast, ToastContainer } from "react-toastify"
 import { StyledButton } from "../../styled-components/styledButton"
-import { useRef, useState,useEffect } from "react"
+import { useRef, useState } from "react"
+import { ButtonContainer, InputContainer } from "./StudentsTab"
+import { FaCircleUser, FaOrcid } from "react-icons/fa6"
+import { FloatingInput, FloatingLabel, InputWrapper } from "../../styled-components/InputComp"
+import { PiExamFill, PiExamLight } from "react-icons/pi"
 
 export const TeacherInputTabContainer = styled.div`
     display: flex;
@@ -13,8 +17,32 @@ export const TeacherInputTabContainer = styled.div`
 `
 
 
-const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype, dataObj, todo) => {
+const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype, dataObj, todo, errorComp, cleanup) => {
     e.preventDefault()
+    const errarr = ["invalid gr no", "invalid sub id", "theory marks range shall be from 0 to 80", "practical marks range shall be from 0 to 20"]
+    let flagarr = [false, false, false, false]
+    if ((dataObj.theoryMarks < 0 || dataObj.theoryMarks > 80) && dataObj.theoryMarks !== undefined && dataObj.theoryMarks !== null) flagarr[2] = true
+    if ((dataObj.practicalMarks < 0 || dataObj.practicalMarks > 20) && dataObj.practicalMarks !== undefined && dataObj.practicalMarks !== null) flagarr[3] = true
+    if (grNo < 0 || grNo > 99999999 && grNo !== undefined && grNo !== null) flagarr[0] = true
+    if ((dataObj.subId < 0 || dataObj.subId > 99999999) && dataObj.subId !== undefined && dataObj.subId !== null) flagarr[1] = true
+
+    let errstr = ""
+    let anyErr = false
+    flagarr.forEach((v, i) => {
+        if (v) {
+            errstr += (errarr[i] + ", ")
+            anyErr = true
+        }
+    })
+
+    if (anyErr) {
+        errorComp.current.innerText = errstr
+        errorComp.current.style.display = "block"
+        return
+    } else {
+        errorComp.current.innerText = ""
+        errorComp.current.style.display = "none"
+    }
     try {
         let resp;
         if (methodtype === "GET") {
@@ -24,15 +52,14 @@ const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype, da
             });
         } else {
             let bodyObj = {}
+            for (const [key, value] of Object.entries(dataObj)) {
+                console.log(key, value);
+                if (value !== null && value !== undefined) {
+                    bodyObj[key] = value
+                }
+            }
             switch (todo) {
                 case "addMark":
-                    bodyObj = {}
-                    for (const [key, value] of Object.entries(dataObj)) {
-                        console.log(key, value);
-                        if (value !== null && value !== undefined) {
-                            bodyObj[key] = value
-                        }
-                    }
                     bodyObj['grNo'] = grNo
                     console.log(bodyObj);
                     resp = await fetch((apiUrl), {
@@ -45,14 +72,9 @@ const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype, da
                     });
                     break;
                 case "editMark":
-                    bodyObj = {}
-                    for (const [key, value] of Object.entries(dataObj)) {
-                        console.log(key, value);
-                        if (value !== null && value !== undefined) {
-                            bodyObj[key] = value
-                        }
-                    }
                     bodyObj['grNo'] = grNo
+                    console.log(bodyObj, "issue su che");
+
                     resp = await fetch((apiUrl), {
                         method: methodtype,
                         credentials: 'include',
@@ -83,18 +105,19 @@ const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype, da
             if (methodtype === "GET") {
                 successToast("fetched data successfully")
             }
-            setter(null)
+            // setter(null)
             return
         }
         if (res.error) {
             errorToast(res.error)
-            setter(null)
+            // setter(null)
             return
         }
     } catch (err) {
         // console.log(err.error);
         errorToast(err.error)
     } finally {
+        cleanup.forEach(e => { e(null) })
         e.target.reset();
     }
 };
@@ -133,7 +156,6 @@ export const MarkEditTab = (props) => {
     const [practical, setPractical] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e, type) => {
-        e.preventDefault()
         switch (type) {
             case "sub":
                 setsubid(Number(e.target.value))
@@ -152,77 +174,55 @@ export const MarkEditTab = (props) => {
         }
     }
 
-    useEffect(() => {
-        const errarr = ["invalid gr no","invalid sub id","theory marks range shall be from 0 to 100","practical marks range shall be from 0 to 20"]
-        let flagarr = [false,false,false,false]
-        if ((theory<0||theory>80)&&theory!==undefined&&theory!==null) flagarr[2] = true
-        if ((practical<0||practical>20)&&practical!==undefined&&practical!==null) flagarr[3] = true
-        if (grNo<0||grNo>99999999&&grNo!==undefined&&grNo!==null) flagarr[0] = true
-        if ((subid<0||subid>99999999)&&subid!==undefined&&subid!==null) flagarr[1] = true
-
-        let errstr = ""
-        let anyErr = false
-        flagarr.forEach((v,i)=>{
-            if (v) {
-                errstr += (errarr[i]+", ")
-                anyErr = true
-            }
-        })
-
-        if (anyErr) {
-            errorComp.current.innerText = errstr
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        }else{
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-
-    }, [theory,practical,subid,grNo])
-
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateMarks`, 'PUT', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "editMark") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="section">
-                                    Provide Gr NO for student:
-                                </label>
-                                <input type="number" required name="grno" placeholder="Enter Gr No here" maxLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
-                            </span>
-                            <span>
-                                <label htmlFor="sid">Provide subject id here: </label>
-                                <input type="number" required name="sid" placeholder="Subject id" maxLength={8} onChange={(e) => { changeHandler(e, "sub") }} />
-                            </span>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateMarks`, 'PUT', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "editMark", errorComp, [setPractical, setTheory, setsubid, setGrNo]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaCircleUser style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={grNo || ""} required name="grno" placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
+                                    <FloatingLabel>Provide Gr NO for student:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaOrcid style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={subid || ""} required name="sid" placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "sub") }} />
+                                    <FloatingLabel>Provide subject id:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}><h3>Fill further details which you wish to edit:</h3></div>
                         <TeacherInputTabContainer>
-                            <label htmlFor="tm">
-                                Provide theoritical marks here:
-                            </label>
-                            <span>
-                                <input type="number" name="tm" placeholder="Theoritical Marks" onChange={(e) => { changeHandler(e, "theory") }} />
-                            </span>
-                            <label htmlFor="pm">Provide practical marks here: </label>
-                            <span>
-                                <input type="number" name="pm" placeholder="Practical Marks" onChange={(e) => { changeHandler(e, "practical") }} />
-                            </span>
+                            <InputContainer style={{ width: "50%" }}>
+                                <PiExamFill style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={theory || ""} name="tm" placeholder=" " onChange={(e) => { changeHandler(e, "theory") }} />
+                                    <FloatingLabel>Provide updated theoritical marks:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <PiExamLight style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={practical || ""} name="pm" placeholder=" " onChange={(e) => { changeHandler(e, "practical") }} />
+                                    <FloatingLabel>Provide updated practical marks:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                        <div>
+                        <ButtonContainer>
                             <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                        </div>
+                        </ButtonContainer>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
-                </SearchOutputSection>
             </SearchBoxSection>
+            {displayData !== undefined && displayData !== null ? <SearchOutputSection>
+                {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
+            </SearchOutputSection> : <></>}
         </div>
     )
 }
@@ -236,7 +236,6 @@ export const MarkAddTab = (props) => {
     const [practical, setPractical] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e, type) => {
-        e.preventDefault()
         switch (type) {
             case "sub":
                 setsubid(Number(e.target.value))
@@ -254,77 +253,56 @@ export const MarkAddTab = (props) => {
                 break;
         }
     }
-
-    useEffect(() => {
-        const errarr = ["invalid gr no","invalid sub id","theory marks range shall be from 0 to 100","practical marks range shall be from 0 to 20"]
-        let flagarr = [false,false,false,false]
-        if ((theory<0||theory>80)&&theory!==undefined&&theory!==null) flagarr[2] = true
-        if ((practical<0||practical>20)&&practical!==undefined&&practical!==null) flagarr[3] = true
-        if (grNo<0||grNo>99999999&&grNo!==undefined&&grNo!==null) flagarr[0] = true
-        if ((subid<0||subid>99999999)&&subid!==undefined&&subid!==null) flagarr[1] = true
-
-        let errstr = ""
-        let anyErr = false
-        flagarr.forEach((v,i)=>{
-            if (v) {
-                errstr += (errarr[i]+", ")
-                anyErr = true
-            }
-        })
-
-        if (anyErr) {
-            errorComp.current.innerText = errstr
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        }else{
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-
-    }, [theory,practical,subid,grNo])
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/enterMarks`, 'POST', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "addMark") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="section">
-                                    Provide Gr NO for student:
-                                </label>
-                                <input type="number" required name="grno" placeholder="Enter Gr No here" maxLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
-                            </span>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/enterMarks`, 'POST', { "subId": subid, "theoryMarks": theory, "practicalMarks": practical }, "addMark", errorComp, [setPractical, setTheory, setsubid, setGrNo]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaCircleUser style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={grNo || ""} required name="grno" placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
+                                    <FloatingLabel>Provide Gr NO for student:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaOrcid style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={subid || ""} required name="sid" placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "sub") }} />
+                                    <FloatingLabel>Provide subject id here:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}><h3>Fill further details for the student's score:</h3></div>
                         <TeacherInputTabContainer>
-                            <label htmlFor="sid">Provide subject id here: </label>
-                            <span>
-                                <input type="number" required name="sid" placeholder="Subject id" maxLength={8} onChange={(e) => { changeHandler(e, "sub") }} />
-                            </span>
-                            <label htmlFor="tm">
-                                Provide theoritical marks here:
-                            </label>
-                            <span>
-                                <input type="number" name="tm" required placeholder="Theoritical marks" onChange={(e) => { changeHandler(e, "theory") }} />
-                            </span>
-                            <label htmlFor="pm">Provide practical marks here: </label>
-                            <span>
-                                <input type="number" name="pm" required placeholder="Practical Marks" onChange={(e) => { changeHandler(e, "practical") }} />
-                            </span>
+                            <InputContainer style={{ width: "50%" }}>
+                                <PiExamFill style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={theory || ""} name="tm" required placeholder=" " onChange={(e) => { changeHandler(e, "theory") }} />
+                                    <FloatingLabel>Provide theoritical marks:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <PiExamLight style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={practical || ""} name="pm" required placeholder=" " onChange={(e) => { changeHandler(e, "practical") }} />
+                                    <FloatingLabel>Provide practical marks:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
+
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                        <div>
+                        <ButtonContainer>
                             <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                        </div>
+                        </ButtonContainer>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
-                </SearchOutputSection>
             </SearchBoxSection>
+                {displayData!==undefined&&displayData!==null?<SearchOutputSection>
+                    {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
+                </SearchOutputSection>:<></>}
         </div>
     )
 }

@@ -2,16 +2,18 @@ import styled from "styled-components";
 
 export const StyledButton = styled.button`
     float:right;
-    margin:1rem;
     font-size:large;
     padding: 10px;
-    background:#006ac8;
+    background:linear-gradient(to right,#62cff4,#2c67f2);
     color:white;
+    width: 250px;
     cursor: pointer;
-    border: 5px double #fff;
+    border-radius: 25px;
+    border: none;
+    transition: .3s ease-in;
 
     &:hover{
-        background:#007ce9;
+        box-shadow: 10px 10px 20px #9d9d9d82;
     }
 `
 

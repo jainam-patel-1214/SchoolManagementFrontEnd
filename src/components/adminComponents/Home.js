@@ -25,9 +25,6 @@ export const AdminHome = (props) => {
         };
         fetchData()
     }, []);
-    // useEffect(() => {
-
-    // }, [])
 
     return (
         <div>

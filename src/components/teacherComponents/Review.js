@@ -1,7 +1,7 @@
 import { ErrorSpan, SearchBoxSection, SearchForm, SearchParamSection } from "../studentComponents/SchoolRes"
 import { toast, ToastContainer } from "react-toastify"
 import { StyledButton } from "../../styled-components/styledButton"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 export const ReviewTab = (props) => {
     const errorComp = useRef(null)
@@ -9,11 +9,10 @@ export const ReviewTab = (props) => {
     const inp1 = useRef(null)
     const inp2 = useRef(null)
     const [grNO, setGrNo] = useState(0)
-    const [rerender, setrerender] = useState(0)
-    const [comment, setComment] = useState("")
+    // const [rerender, setrerender] = useState(0)
+    const [comment, setComment] = useState(null)
 
     const changeHandler = (e, type) => {
-        e.preventDefault()
         switch (type) {
             case "grno":
                 setGrNo(Number(e.target.value))
@@ -27,6 +26,24 @@ export const ReviewTab = (props) => {
     }
     const fetchData = async (e) => {
         e.preventDefault()
+        let flagarr = [false,false]
+        let errarr = ["Please provide a comment to add, ", "Invalid GrNO, "]
+        if (comment.length <= 0) flagarr[0] = true
+        if (grNO <= 0 || grNO > 99999999) flagarr[1] = true
+        let errstr = ""
+        flagarr.forEach((v,i)=>{
+            if (v==true) {
+                errstr += errarr[i]
+            }
+        })
+        if ((flagarr[0] || flagarr[1])) {
+            errorComp.current.innerText = errstr
+            errorComp.current.style.display = "block"
+            return
+        } else {
+            errorComp.current.innerText = ""
+            errorComp.current.style.display = "none"
+        }
         try {
             const apiUrl = `http://localhost:8090/${props.roleOfPerson}/addReview`;
 
@@ -47,11 +64,6 @@ export const ReviewTab = (props) => {
                     progress: undefined,
                     theme: "light",
                 });
-                setComment("")
-                setGrNo(null)
-                inp1.current.value = ""
-                inp2.current.value = ""
-                setrerender(0)
                 return
             }
             if (res.error) {
@@ -65,11 +77,6 @@ export const ReviewTab = (props) => {
                     progress: undefined,
                     theme: "light",
                 });
-                setComment("")
-                setGrNo(null)
-                inp1.current.value = ""
-                inp2.current.value = ""
-                setrerender(0)
                 return
             }
         } catch (err) {
@@ -85,33 +92,11 @@ export const ReviewTab = (props) => {
                 theme: "light",
             });
         } finally{
+            setComment(null)
+            setGrNo(null)
             e.target.reset();
         }
-    };
-
-    useEffect(() => {
-        console.log(grNO, comment);
-
-        let flag1 = false
-        let flag2 = false
-        let errarr = ["Please provide a comment to add, ", "Invalid GrNO, "]
-        if (comment.length <= 0) flag1 = true
-        if (grNO <= 0 || grNO > 99999999) flag2 = true
-        let errstr = ""
-        if (flag1) errstr += errarr[0]
-        if (flag2) errstr += errarr[1]
-        if ((flag1 || flag2) && rerender !== 0) {
-            errorComp.current.innerText = errstr
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        } else {
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-        setrerender(1)
-    }, [grNO, comment])
+    }
 
     return (
         <SearchBoxSection>
@@ -123,11 +108,11 @@ export const ReviewTab = (props) => {
                             <label htmlFor="std">
                                 Provide Gr NO. of the student:
                             </label>
-                            <input type="number" name="grno" placeholder="Enter gr. no here" onChange={(e) => { changeHandler(e, "grno") }} ref={inp1} />
+                            <input type="number" value={grNO||""} required name="grno" placeholder="Enter gr. no here" onChange={(e) => { changeHandler(e, "grno") }}/>
                             <label htmlFor="std">
                                 Enter a review:
                             </label>
-                            <input type="text" name="review" placeholder="Provide review here" onChange={(e) => { changeHandler(e, "comment") }} maxLength={254} ref={inp2} />
+                            <input type="text" required name="review" value={comment||""} placeholder="Provide review here" onChange={(e) => { changeHandler(e, "comment") }} maxLength={254}/>
                         </span>
                         <div>
                             <StyledButton ref={buttonComp} >Submit</StyledButton>

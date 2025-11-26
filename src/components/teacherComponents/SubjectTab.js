@@ -3,7 +3,13 @@ import { ErrorSpan, SearchBoxSection, SearchForm, SearchOutputSection, SearchPar
 import { toast, ToastContainer } from "react-toastify"
 import { StyledButton } from "../../styled-components/styledButton"
 import { SubInfo, TableEntry } from "../studentComponents/Home"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
+import { ButtonContainer, InputContainer } from "./StudentsTab"
+import { RiBookShelfLine } from "react-icons/ri"
+import { FaOrcid } from "react-icons/fa6";
+import { LuBookA } from "react-icons/lu";
+import { IoIosRibbon } from "react-icons/io";
+import { FloatingInput, FloatingLabel, InputWrapper } from "../../styled-components/InputComp"
 
 export const TeacherInputTabContainer = styled.div`
     display: flex;
@@ -14,8 +20,29 @@ export const TeacherInputTabContainer = styled.div`
 `
 
 
-const fetchData = async (e, grade, setGrade, setDisplayData, apiUrl, methodtype,dataObj,todo) => {
+const fetchData = async (e, grade, setGrade, setDisplayData, apiUrl, methodtype, dataObj, todo, errorComp, cleanup) => {
     e.preventDefault()
+    const errarr = ["invalid sub id", "invalid grade. Allowed range is 1 - 12"]
+    let flagarr = [false, false]
+    if ((grade < 1 || grade > 12) && grade !== null && grade !== undefined) flagarr[1] = true
+    if ((dataObj.subId < 0 || dataObj.subId > 99999999) && dataObj.subId !== undefined && dataObj.subId !== null) flagarr[0] = true
+    let errstr = ""
+    let anyErr = false
+    flagarr.forEach((v, i) => {
+        if (v) {
+            errstr += (errarr[i] + ", ")
+            anyErr = true
+        }
+    })
+
+    if (anyErr) {
+        errorComp.current.innerText = errstr
+        errorComp.current.style.display = "block"
+        return
+    } else {
+        errorComp.current.innerText = ""
+        errorComp.current.style.display = "none"
+    }
     try {
         let resp;
         if (methodtype === "GET") {
@@ -25,15 +52,14 @@ const fetchData = async (e, grade, setGrade, setDisplayData, apiUrl, methodtype,
             });
         } else {
             let bodyObj = {}
+            for (const [key, value] of Object.entries(dataObj)) {
+                console.log(key, value);
+                if (value !== null && value !== undefined) {
+                    bodyObj[key] = value
+                }
+            }
             switch (todo) {
                 case "addSub":
-                    bodyObj = {}
-                    for (const [key, value] of Object.entries(dataObj)) {
-                        console.log(key,value);
-                        if (value!==null && value!==undefined) {
-                            bodyObj[key] = value
-                        }
-                    }
                     resp = await fetch((apiUrl), {
                         method: methodtype,
                         credentials: 'include',
@@ -44,10 +70,9 @@ const fetchData = async (e, grade, setGrade, setDisplayData, apiUrl, methodtype,
                     });
                     break;
                 case "editSub":
-                    bodyObj = {}
                     for (const [key, value] of Object.entries(dataObj)) {
-                        console.log(key,value);
-                        if (value!==null && value!==undefined) {
+                        console.log(key, value);
+                        if (value !== null && value !== undefined) {
                             bodyObj[key] = value
                         }
                     }
@@ -67,7 +92,7 @@ const fetchData = async (e, grade, setGrade, setDisplayData, apiUrl, methodtype,
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({"subId":grade})
+                        body: JSON.stringify({ "subId": grade })
                     })
                     break;
                 default:
@@ -79,17 +104,17 @@ const fetchData = async (e, grade, setGrade, setDisplayData, apiUrl, methodtype,
 
         if (res.output) {
             setDisplayData(res.output)
-            if (methodtype==="PUT") {
+            if (methodtype === "PUT") {
                 successToast("updated data successfully")
             }
-            if (methodtype==="DELETE") {
+            if (methodtype === "DELETE") {
                 successToast("deleted subject successfully")
             }
-            if (methodtype==="POST") {
+            if (methodtype === "POST") {
                 successToast("created subject successfully")
             }
-            if (methodtype==="GET") {
-                successToast("fetched data successfully")   
+            if (methodtype === "GET") {
+                successToast("fetched data successfully")
             }
             return
         }
@@ -101,6 +126,7 @@ const fetchData = async (e, grade, setGrade, setDisplayData, apiUrl, methodtype,
         // console.log(err.error);
         errorToast(err.error)
     } finally {
+        cleanup.forEach(e => e(null))
         e.target.reset();
     }
 };
@@ -136,56 +162,42 @@ export const SubTab = (props) => {
     const [grade, setGrade] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e) => {
-        e.preventDefault()
         setGrade(Number(e.target.value))
     }
-
-    useEffect(() => {
-        let flag = false
-        if ((grade < 1 || grade > 12) && grade!==null && grade!==undefined) flag = true
-        if (flag) {
-            errorComp.current.innerText = "Invalid Grade. Grade are allowed only from 1 to 12"
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        } else {
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-    }, [grade])
 
     return (
         <div>
             <SearchBoxSection>
-            < ToastContainer />
-            <SearchParamSection>
-                <SearchForm onSubmit={(e) => { fetchData(e,grade,setGrade,setDisplayData,`http://localhost:8090/${props.roleOfPerson}/displaySub`,"GET",{},"fetch data") }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                        <span>
-                            <label htmlFor="std">
-                                Provide grade of class you wish to check subject:
-                            </label>
-                            <input type="number" name="std" placeholder="Enter standard here" onChange={(e) => { changeHandler(e) }} />
-                        </span>
-                        <div>
+                < ToastContainer />
+                <SearchParamSection>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/displaySub`, "GET", {}, "fetch data", errorComp, [setGrade]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <RiBookShelfLine style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="std" value={grade || ''} placeholder=" " onChange={(e) => { changeHandler(e) }} />
+                                    <FloatingLabel>Provide standard to search associated subjects :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
+                        <ButtonContainer>
                             <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                        </div>
-                    </div>
-                    <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                </SearchForm>
-            </SearchParamSection>
-            <SearchOutputSection>
-                {(typeof displayData === 'string' && displayData === "no subjects found")?<>No Subjects Found</>:
-                <SubInfo style={{border:"1px solid black"}}>
-                    <thead>
-                        <tr>
-                            <th>Subject Id</th>
-                            <th>Name</th>
-                            <th>Standard</th>
-                            <th>Credits</th>
-                        </tr>
-                    </thead>
+                        </ButtonContainer>
+                        <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
+                    </SearchForm>
+                </SearchParamSection>
+            </SearchBoxSection>
+            {displayData!==undefined&&displayData!==null?<SearchOutputSection>
+                {(typeof displayData === 'string' && displayData === "no subjects found") ? <>No Subjects Found</> : <>
+                    {displayData?.length > 0 ? <SubInfo style={{ border: "1px solid black" }}>
+                        <thead>
+                            <tr>
+                                <th>Subject Id</th>
+                                <th>Name</th>
+                                <th>Standard</th>
+                                <th>Credits</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             {displayData?.map((element, index) => {
                                 return (
@@ -198,10 +210,9 @@ export const SubTab = (props) => {
                                 )
                             })}
                         </tbody>
-                </SubInfo>
+                    </SubInfo> : <></>}</>
                 }
-            </SearchOutputSection>
-        </SearchBoxSection>
+            </SearchOutputSection>:<></>}
         </div>
     )
 }
@@ -215,7 +226,6 @@ export const SubEditTab = (props) => {
     const [name, setName] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e, type) => {
-        e.preventDefault()
         switch (type) {
             case "subid":
                 setsubId(Number(e.target.value))
@@ -234,75 +244,55 @@ export const SubEditTab = (props) => {
         }
     }
 
-    useEffect(() => {
-        const errarr = ["invalid sub id","invalid grade. Allowed range is 1 - 12"]
-        let flagarr = [false,false]
-        if ((grade < 1 || grade > 12) && grade!==null && grade!==undefined) flagarr[1] = true
-        if ((subId<0||subId>99999999)&&subId!==undefined&&subId!==null) flagarr[0] = true
-        let errstr = ""
-        let anyErr = false
-        flagarr.forEach((v,i)=>{
-            if (v) {
-                errstr += (errarr[i]+", ")
-                anyErr = true
-            }
-        })
-
-        if (anyErr) {
-            errorComp.current.innerText = errstr
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        }else{
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-    }, [grade,subId])
-
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateSub`, 'PUT',{"subId":subId,"subName":name,"credits":credits,"levelStd":grade},"editSub") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="subid">
-                                    Provide SubId for subject you wish to update data:
-                                </label>
-                                <input type="number" name="subid" required placeholder="Enter Sub Id here" maxLength={8} onChange={(e) => { changeHandler(e, "subid") }} />
-                            </span>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateSub`, 'PUT', { "subId": subId, "subName": name, "credits": credits, "levelStd": grade }, "editSub", errorComp, [setGrade, setCredits, setName, setsubId]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <FaOrcid style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="subid" value={subId || ''} required placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "subid") }} />
+                                    <FloatingLabel>Provide subject's SubId to be updated:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}><h3>Only fill the fields you wish to update data:</h3></div>
                         <TeacherInputTabContainer>
-                            <label htmlFor="subname">Provide new name here: </label>
-                            <span>
-                                <input type="text" name="subname" placeholder="Subject Name" maxLength={55} onChange={(e) => { changeHandler(e, "name") }} />
-                            </span>
-                            <label htmlFor="credit">
-                                    Provide updated credit here:
-                            </label>
-                            <span>
-                            <input type="number" name="credit" placeholder="Credits" onChange={(e) => { changeHandler(e, "credits") }} />
-                            </span>
-                            <label htmlFor="std">
-                                    Provide updated standard here:
-                            </label>
-                            <span>
-                            <input type="number" name="std" placeholder="Subject Grade" onChange={(e) => { changeHandler(e, "std") }} />
-                            </span>
+                            <InputContainer style={{width:"35%"}}>
+                                <LuBookA style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="text" name="subname" value={name || ''} placeholder=" " maxLength={55} onChange={(e) => { changeHandler(e, "name") }} />
+                                    <FloatingLabel>Provide new name:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{width:"35%"}}>
+                                <IoIosRibbon style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="credit" value={credits || ''} placeholder=" " onChange={(e) => { changeHandler(e, "credits") }} />
+                                    <FloatingLabel>Provide new credits:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{width:"35%"}}>
+                                <RiBookShelfLine style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="std" value={grade || ''} placeholder=" " onChange={(e) => { changeHandler(e, "std") }} />
+                                    <FloatingLabel>Provide new standard:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                            <div>
-                                <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                            </div>
+                        <ButtonContainer>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                        </ButtonContainer>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {typeof(displayData)==="string"?<div style={{padding:"10px"}}>{displayData}</div>:<></>}
-                </SearchOutputSection>
-                </SearchBoxSection>
+            </SearchBoxSection>
+                {displayData!==undefined&&displayData!==null?<SearchOutputSection>
+                    {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
+                </SearchOutputSection>:<></>}
         </div>
     )
 }
@@ -313,51 +303,36 @@ export const SubDelTab = (props) => {
     const [subid, setSubId] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e) => {
-        e.preventDefault()
         setSubId(Number(e.target.value))
     }
-
-    useEffect(() => {
-        let flag = false
-        if ((subid < 1 || subid > 99999999) && subid!==null && subid!==undefined) flag = true
-        if (flag) {
-            errorComp.current.innerText = "Invalid subject id"
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        } else {
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-    }, [subid])
 
     return (
         <div>
             <SearchBoxSection>
-            < ToastContainer />
-            <SearchParamSection>
-                <SearchForm onSubmit={(e) => { fetchData(e,subid,setSubId,setDisplayData,`http://localhost:8090/${props.roleOfPerson}/delSubject`,"DELETE",{},"delSub") }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                        <span>
-                            <label htmlFor="subid">
-                                Provide subId of subject you wish to delete:
-                            </label>
-                            <input type="number" name="subid" placeholder="Enter subId here" onChange={(e) => { changeHandler(e) }} />
-                        </span>
-                        <div>
-                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                        </div>
-                    </div>
-                    <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                </SearchForm>
-            </SearchParamSection>
-            <SearchOutputSection>
-                {(typeof displayData === 'string')?<div style={{padding:"10px"}}>{displayData}</div>:
-                <></>
-                }
-            </SearchOutputSection>
-        </SearchBoxSection>
+                < ToastContainer />
+                <SearchParamSection>
+                    <SearchForm onSubmit={(e) => { fetchData(e, subid, setSubId, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/delSubject`, "DELETE", {}, "delSub", errorComp, [setSubId]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <FaOrcid style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="subid" value={subid || ''} placeholder=" " onChange={(e) => { changeHandler(e) }} />
+                                    <FloatingLabel>Provide subId of subject you wish to delete:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
+                        <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
+                            <ButtonContainer>
+                                <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                            </ButtonContainer>
+                    </SearchForm>
+                </SearchParamSection>
+            </SearchBoxSection>
+                {displayData!==undefined&&displayData!==null?<SearchOutputSection>
+                    {(typeof displayData === 'string') ? <div style={{ padding: "10px" }}>{displayData}</div> :
+                        <></>
+                    }
+                </SearchOutputSection>:<></>}
         </div>
     )
 }
@@ -371,7 +346,6 @@ export const SubAddTab = (props) => {
     const [name, setName] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e, type) => {
-        e.preventDefault()
         switch (type) {
             case "subid":
                 setsubId(Number(e.target.value))
@@ -391,75 +365,55 @@ export const SubAddTab = (props) => {
     }
 
 
-    useEffect(() => {
-        const errarr = ["invalid sub id","invalid grade. Allowed range is 1 - 12"]
-        let flagarr = [false,false]
-        if ((grade < 1 || grade > 12) && grade!==null && grade!==undefined) flagarr[1] = true
-        if ((subId<0||subId>99999999)&&subId!==undefined&&subId!==null) flagarr[0] = true
-        let errstr = ""
-        let anyErr = false
-        flagarr.forEach((v,i)=>{
-            if (v) {
-                errstr += (errarr[i]+", ")
-                anyErr = true
-            }
-        })
-
-        if (anyErr) {
-            errorComp.current.innerText = errstr
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        }else{
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-    }, [grade,subId])
-
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/createSub`, 'POST',{"subId":subId,"subName":name,"credits":credits,"levelStd":grade},"addSub") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="subid">
-                                    Provide SubId for new subject:
-                                </label>
-                                <input type="number" name="subid" required placeholder="Enter Sub Id here" maxLength={8} onChange={(e) => { changeHandler(e, "subid") }} />
-                            </span>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grade, setGrade, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/createSub`, 'POST', { "subId": subId, "subName": name, "credits": credits, "levelStd": grade }, "addSub", errorComp, [setGrade, setCredits, setName, setsubId]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <FaOrcid style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={subId || ''} name="subid" required placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "subid") }} />
+                                    <FloatingLabel>Provide SubId for new subject:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}><h3>Fill further mendatory details below:</h3></div>
                         <TeacherInputTabContainer>
-                            <label htmlFor="subname">Provide subject name here: </label>
-                            <span>
-                                <input type="text" name="subname" placeholder="Subject Name" maxLength={55} onChange={(e) => { changeHandler(e, "name") }} />
-                            </span>
-                            <label htmlFor="credit">
-                                    Provide credits here:
-                            </label>
-                            <span>
-                            <input type="number" name="credit" placeholder="Credits" onChange={(e) => { changeHandler(e, "credits") }} />
-                            </span>
-                            <label htmlFor="std">
-                                    Provide subject grade here:
-                            </label>
-                            <span>
-                            <input type="number" name="std" placeholder="Subject Grade" onChange={(e) => { changeHandler(e, "std") }} />
-                            </span>
+                            <InputContainer style={{width:"35%"}}>
+                                <LuBookA style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="text" name="subname" value={name || ''} placeholder=" " maxLength={55} onChange={(e) => { changeHandler(e, "name") }} />
+                                    <FloatingLabel>Provide subject name:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{width:"35%"}}>
+                                <IoIosRibbon style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="credit" value={credits || ''} placeholder=" " onChange={(e) => { changeHandler(e, "credits") }} />
+                                    <FloatingLabel>Provide subject credits:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{width:"35%"}}>
+                                <RiBookShelfLine style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="std" value={grade || ''} placeholder=" " onChange={(e) => { changeHandler(e, "std") }} />
+                                    <FloatingLabel>Provide subject's grade:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                            <div>
-                                <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                            </div>
+                        <ButtonContainer>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                        </ButtonContainer>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {typeof(displayData)==="string"?<div style={{padding:"10px"}}>{displayData}</div>:<></>}
-                </SearchOutputSection>
-                </SearchBoxSection>
+            </SearchBoxSection>
+                {displayData!==undefined&&displayData!==null?<SearchOutputSection>
+                    {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
+                </SearchOutputSection>:<></>}
         </div>
     )
 }

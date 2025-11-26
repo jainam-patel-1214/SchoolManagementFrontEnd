@@ -45,7 +45,9 @@ export const Navbar = (props) => {
         <Fragment>
             <ToastContainer />
             <StyledNavbar>
+                <div>
                 <p style={{ fontSize: "x-large" }}>Welcome <strong>{uName}</strong></p>
+                </div>
                 <div>
                     {uName !== "" ? <StyledNavbarTabs onClick={(e) => { signOutHandler(e) }} >
                         SignOut

@@ -3,19 +3,64 @@ import { ErrorSpan, SearchBoxSection, SearchForm, SearchOutputSection, SearchPar
 import { toast, ToastContainer } from "react-toastify"
 import { StyledButton } from "../../styled-components/styledButton"
 import { Label, LabelValue, PerformanceWindow, StudentInfo, SubInfo, TableEntry, Value } from "../studentComponents/Home"
-import { Fragment, useEffect, useRef, useState } from "react"
+import { Fragment, useRef, useState } from "react"
+import { FloatingInput, FloatingLabel, InputWrapper } from "../../styled-components/InputComp"
+import { FaAddressCard, FaCircleUser, FaKey } from "react-icons/fa6";
+import { RiBookShelfLine } from "react-icons/ri"
+import { MdWindow } from "react-icons/md"
+
 
 export const TeacherInputTabContainer = styled.div`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin: .5rem;
     align-items: center;
+`
+export const InputContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    width: inherit;
+    width: 100%;
+    svg{
+        margin: 10px;
+    }
+`
+export const ButtonContainer = styled.div`
+    margin-right: 10px;
 `
 
 
-const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype,dataObj,todo) => {
+const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype, dataObj, todo, errorComp, cleanup) => {
     e.preventDefault()
+    console.log("main data", dataObj, "----", grNo);
+
+    const regex = /^[A-Za-z ]*$/;
+    const errarr = ["invalid gr no", "passwords are needed to be 8 digits", "standard shall have range of 1 - 12", "invalid name", "invalid section"]
+    let flagarr = [false, false, false, false, false]
+    if (dataObj?.studPwd !== undefined && dataObj?.studPwd !== null && (dataObj?.studPwd.toString().length !== 8)) flagarr[1] = true
+    if ((grNo < 0 || grNo > 99999999) && grNo !== undefined && grNo !== null) flagarr[0] = true
+    if ((dataObj?.std < 1 || dataObj?.std > 12) && dataObj?.std !== undefined && dataObj?.std !== null) flagarr[2] = true
+    if (!(regex.test(dataObj?.studName)) && dataObj?.studName !== undefined && dataObj?.studName !== null && dataObj?.studName != "") flagarr[3] = true
+    if (!(regex.test(dataObj?.section)) && dataObj?.section !== undefined && dataObj?.section !== null) flagarr[4] = true
+    let errstr = ""
+    let anyErr = false
+    flagarr.forEach((v, i) => {
+        if (v) {
+            errstr += (errarr[i] + ", ")
+            anyErr = true
+        }
+    })
+
+    if (anyErr) {
+        errorComp.current.innerText = errstr
+        errorComp.current.style.display = "block"
+        return
+    } else {
+        errorComp.current.innerText = ""
+        errorComp.current.style.display = "none"
+    }
     try {
         let resp;
         if (methodtype === "GET") {
@@ -25,17 +70,16 @@ const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype,dat
             });
         } else {
             let bodyObj = {}
+            for (const [key, value] of Object.entries(dataObj)) {
+                console.log(key, value);
+                if (value !== null && value !== undefined) {
+                    bodyObj[key] = value
+                }
+            }
             switch (todo) {
                 case "addStud":
-                    bodyObj = {}
-                    for (const [key, value] of Object.entries(dataObj)) {
-                        console.log(key,value);
-                        if (value!==null && value!==undefined) {
-                            bodyObj[key] = value
-                        }
-                    }
                     bodyObj['grNo'] = grNo
-                    bodyObj['userRole']="student"
+                    bodyObj['userRole'] = "student"
                     resp = await fetch((apiUrl), {
                         method: methodtype,
                         credentials: 'include',
@@ -46,13 +90,6 @@ const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype,dat
                     });
                     break;
                 case "editStud":
-                    bodyObj = {}
-                    for (const [key, value] of Object.entries(dataObj)) {
-                        console.log(key,value);
-                        if (value!==null && value!==undefined) {
-                            bodyObj[key] = value
-                        }
-                    }
                     bodyObj['grNo'] = grNo
                     resp = await fetch((apiUrl), {
                         method: methodtype,
@@ -64,15 +101,14 @@ const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype,dat
                     });
                     break;
                 case "delStud":
-                    console.log(apiUrl,methodtype,{"grNo":grNo});
-                    
+                    console.log(apiUrl, methodtype, { "grNo": grNo });
                     resp = await fetch((apiUrl), {
                         method: methodtype,
                         credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({"grNo":grNo})
+                        body: JSON.stringify({ "grNo": grNo })
                     })
                     break;
                 default:
@@ -80,34 +116,33 @@ const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype,dat
             }
         }
         const res = await resp.json();
-        console.log(typeof(res.output));
+        console.log(typeof (res.output));
 
         if (res.output) {
             setDisplayData(res.output)
-            if (methodtype==="PUT") {
+            if (methodtype === "PUT") {
                 successToast("updated data successfully")
             }
-            if (methodtype==="DELETE") {
+            if (methodtype === "DELETE") {
                 successToast("deleted student successfully")
             }
-            if (methodtype==="POST") {
+            if (methodtype === "POST") {
                 successToast("created student successfully")
             }
-            if (methodtype==="GET") {
-                successToast("fetched data successfully")   
+            if (methodtype === "GET") {
+                successToast("fetched data successfully")
             }
-            setter(null)
             return
         }
         if (res.error) {
             errorToast(res.error)
-            setter(null)
             return
         }
     } catch (err) {
         // console.log(err.error);
         errorToast(err.error)
     } finally {
+        cleanup.forEach(e => e(null))
         e.target.reset();
     }
 };
@@ -143,131 +178,116 @@ export const StudentTab = (props) => {
     const [grNo, setGrNo] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e) => {
-        e.preventDefault()
         setGrNo(e.target.value)
     }
-
-    useEffect(() => {
-        let flag = false
-        if ((grNo < 0 || grNo > 99999999) && grNo!==null && grNo!==undefined) flag = true
-        if (flag) {
-            errorComp.current.innerText = "Invalid GrNO"
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        } else {
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-    }, [grNo])
 
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/displayStud`, 'GET',{},"fetch data") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="std">
-                                    Provide gr no of student to edit data:
-                                </label>
-                                <input type="number" name="grNo" required placeholder="Enter Gr No here" onChange={(e) => { changeHandler(e) }} />
-                            </span>
-                            <div>
-                                <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                            </div>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/displayStud`, 'GET', {}, "fetch data", errorComp, [setGrNo]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <FaCircleUser style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={grNo || ''} name="grNo" required placeholder=" " onChange={(e) => { changeHandler(e) }} />
+                                    <FloatingLabel>Provide Gr NO for student:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
+                        <ButtonContainer>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                        </ButtonContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {(displayData === undefined || displayData === null) ? <></> :
-                        <>{(typeof displayData === 'string') ? <span style={{ padding: "10px" }}>{displayData}</span> :
-                            <Fragment>
-                                <StudentInfo>
-                                    <LabelValue>
-                                        <Label><strong>Name:</strong></Label>
-                                        <Value>{displayData.StudData.Name}</Value>
-                                    </LabelValue>
-                                    <LabelValue>
-                                        <Label><strong>Standard:</strong></Label>
-                                        <Value>{displayData.StudData.Std}</Value>
-                                    </LabelValue>
-                                    <LabelValue>
-                                        <Label><strong>Password:</strong></Label>
-                                        <Value>{displayData.StudData.Password}</Value>
-                                    </LabelValue>
-                                    <LabelValue>
-                                        <Label><strong>Section:</strong></Label>
-                                        <Value>{displayData.StudData.Section}</Value>
-                                    </LabelValue>
-                                </StudentInfo>
-                                <PerformanceWindow>
-                                    <h2>Report Card</h2>
-                                    <div style={{ border: "1px solid black", width: "100%" }}>
-                                        <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
-                                            <h3>Comments</h3>
-                                            {displayData.CommentInfo?.length > 0 ? <>
-                                                <SubInfo style={{ width: "100%" }}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Teacher Id</th>
-                                                            <th>Teacher Name</th>
-                                                            <th>Review</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {displayData.CommentInfo?.map((element, index) => {
-                                                            return (
-                                                                <tr key={index}>
-                                                                    <TableEntry>{element.tId}</TableEntry>
-                                                                    <TableEntry>{element.tName}</TableEntry>
-                                                                    <TableEntry>{element.comment}</TableEntry>
-                                                                </tr>
-                                                            )
-                                                        })}
-                                                    </tbody>
-                                                </SubInfo>
-                                            </> : <>No review made by any teacher</>}
-                                        </div>
-                                        <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
-                                            <h3>Performance</h3>
-                                            {displayData.MarkInfo?.length > 0 ? <>
-                                                <SubInfo style={{ width: "100%" }}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Subject Id</th>
-                                                            <th>Subject Name</th>
-                                                            <th>Practical Marks</th>
-                                                            <th>Theory Marks</th>
-                                                            <th>Grade</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {displayData.MarkInfo?.map((element, index) => {
-                                                            return (
-                                                                <tr key={index}>
-                                                                    <TableEntry>{element.subId}</TableEntry>
-                                                                    <TableEntry>{element.subjectName}</TableEntry>
-                                                                    <TableEntry>{element.practicalMM}</TableEntry>
-                                                                    <TableEntry>{element.theoryMM}</TableEntry>
-                                                                    <TableEntry>{element.grade}</TableEntry>
-                                                                </tr>
-                                                            )
-                                                        })}
-                                                    </tbody>
-                                                </SubInfo>
-                                            </> : <>No entry of marks scroed in exam by any teacher</>}
-                                        </div>
-                                    </div>
-                                </PerformanceWindow>
-                            </Fragment>
-                        }</>
-                    }
-                </SearchOutputSection>
             </SearchBoxSection>
+            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+                {(displayData === undefined || displayData === null) ? <></> :
+                    <>{(typeof displayData === 'string') ? <span style={{ padding: "10px" }}>{displayData}</span> :
+                        <Fragment>
+                            <StudentInfo>
+                                <LabelValue>
+                                    <Label><strong>Name:</strong></Label>
+                                    <Value>{displayData.StudData.Name}</Value>
+                                </LabelValue>
+                                <LabelValue>
+                                    <Label><strong>Standard:</strong></Label>
+                                    <Value>{displayData.StudData.Std}</Value>
+                                </LabelValue>
+                                <LabelValue>
+                                    <Label><strong>Password:</strong></Label>
+                                    <Value>{displayData.StudData.Password}</Value>
+                                </LabelValue>
+                                <LabelValue>
+                                    <Label><strong>Section:</strong></Label>
+                                    <Value>{displayData.StudData.Section}</Value>
+                                </LabelValue>
+                            </StudentInfo>
+                            <PerformanceWindow>
+                                <h2>Report Card</h2>
+                                <div style={{ border: "1px solid black", width: "100%" }}>
+                                    <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
+                                        <h3>Comments</h3>
+                                        {displayData.CommentInfo?.length > 0 ? <>
+                                            <SubInfo style={{ width: "100%" }}>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Teacher Id</th>
+                                                        <th>Teacher Name</th>
+                                                        <th>Review</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {displayData.CommentInfo?.map((element, index) => {
+                                                        return (
+                                                            <tr key={index}>
+                                                                <TableEntry>{element.tId}</TableEntry>
+                                                                <TableEntry>{element.tName}</TableEntry>
+                                                                <TableEntry>{element.comment}</TableEntry>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </SubInfo>
+                                        </> : <>No review made by any teacher</>}
+                                    </div>
+                                    <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
+                                        <h3>Performance</h3>
+                                        {displayData.MarkInfo?.length > 0 ? <>
+                                            <SubInfo style={{ width: "100%" }}>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Subject Id</th>
+                                                        <th>Subject Name</th>
+                                                        <th>Practical Marks</th>
+                                                        <th>Theory Marks</th>
+                                                        <th>Grade</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {displayData.MarkInfo?.map((element, index) => {
+                                                        return (
+                                                            <tr key={index}>
+                                                                <TableEntry>{element.subId}</TableEntry>
+                                                                <TableEntry>{element.subjectName}</TableEntry>
+                                                                <TableEntry>{element.practicalMM}</TableEntry>
+                                                                <TableEntry>{element.theoryMM}</TableEntry>
+                                                                <TableEntry>{element.grade}</TableEntry>
+                                                            </tr>
+                                                        )
+                                                    })}
+                                                </tbody>
+                                            </SubInfo>
+                                        </> : <>No entry of marks scroed in exam by any teacher</>}
+                                    </div>
+                                </div>
+                            </PerformanceWindow>
+                        </Fragment>
+                    }</>
+                }
+            </SearchOutputSection>:<></>}
         </div>
     )
 }
@@ -282,7 +302,6 @@ export const StudentEditTab = (props) => {
     const [pwd, setPwd] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e, type) => {
-        e.preventDefault()
         switch (type) {
             case "password":
                 setPwd(e.target.value)
@@ -304,84 +323,64 @@ export const StudentEditTab = (props) => {
         }
     }
 
-    useEffect(() => {
-        const errarr = ["invalid gr no","passwords are needed to be 8 digits","standard shall have range of 1 - 12"]
-        let flagarr = [false,false,false]
-        if (pwd!==undefined&&pwd!==null&&(pwd.toString().length!==8)) flagarr[1] = true
-        if ((grNo<0||grNo>99999999)&&grNo!==undefined&&grNo!==null) flagarr[0] = true
-        if ((std<1||std>12)&&std!==undefined&&std!==null) flagarr[2] = true
-
-        let errstr = ""
-        let anyErr = false
-        flagarr.forEach((v,i)=>{
-            if (v) {
-                errstr += (errarr[i]+", ")
-                anyErr = true
-            }
-        })
-
-        if (anyErr) {
-            errorComp.current.innerText = errstr
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        }else{
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-
-    }, [pwd,std,grNo])
-
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateStud`, 'PUT',{"studName":name,"studPwd":pwd,"section":section,"std":std},"editStud") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="section">
-                                    Provide Gr NO for student you wish to update data:
-                                </label>
-                                <input type="number" name="grno" required placeholder="Enter Gr No here" maxLength={8} minLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
-                            </span>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/updateStud`, 'PUT', { "studName": name, "studPwd": pwd, "section": section, "std": std }, "editStud", errorComp, [setGrNo, setName, setPwd, setSection, setStd]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <FaCircleUser style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="grno" value={grNo || ''} required placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
+                                    <FloatingLabel>Provide Gr NO for student you wish to update data:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}><h3>Only fill the fields you wish to update data:</h3></div>
                         <TeacherInputTabContainer>
-                            <label htmlFor="password">Provide new password here: </label>
-                            <span>
-                                <input type="password" name="password" placeholder="Password" maxLength={8} onChange={(e) => { changeHandler(e, "password") }} />
-                            </span>
-                            <label htmlFor="sname">
-                                    Provide updated name here:
-                            </label>
-                            <span>
-                            <input type="text" name="sname" placeholder="Name" onChange={(e) => { changeHandler(e, "name") }} />
-                            </span>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaKey style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="password" name="password" value={pwd || ''} placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "password") }} />
+                                    <FloatingLabel>Provide new password :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaAddressCard style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="text" name="sname" value={name || ''} placeholder=" " onChange={(e) => { changeHandler(e, "name") }} />
+                                    <FloatingLabel>Provide updated name :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
                         <TeacherInputTabContainer>
-                            <label htmlFor="section">Provide new section here: </label>
-                            <span>
-                                <input type="text" name="section" placeholder="Section" maxLength={2} onChange={(e) => { changeHandler(e, "section") }} />
-                            </span>
-                            <label htmlFor="std">
-                                    Provide updated standard here:
-                            </label>
-                            <span>
-                            <input type="number" name="std" placeholder="Standard" onChange={(e) => { changeHandler(e, "std") }} />
-                            </span>
+                            <InputContainer style={{ width: "50%" }}>
+                                <MdWindow style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="text" value={section || ''} name="section" placeholder=" " maxLength={2} onChange={(e) => { changeHandler(e, "section") }} />
+                                    <FloatingLabel>Provide new section :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <RiBookShelfLine style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={std || ''} name="std" placeholder=" " onChange={(e) => { changeHandler(e, "std") }} />
+                                    <FloatingLabel>Provide updated standard :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                            <div>
-                                <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                            </div>
+                        <ButtonContainer>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                        </ButtonContainer>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {typeof(displayData)==="string"?<div style={{padding:"10px"}}>{displayData}</div>:<></>}
-                </SearchOutputSection>
-                </SearchBoxSection>
+            </SearchBoxSection>
+            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+                {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
+            </SearchOutputSection>:<></>}
         </div>
     )
 }
@@ -396,47 +395,31 @@ export const StudentDelTab = (props) => {
         setGrNo(Number(e.target.value))
     }
 
-    useEffect(() => {
-        console.log(grNo);
-        
-        let flag = false
-        if ((grNo < 0 || grNo > 99999999) && grNo!==null && grNo!==undefined) flag = true
-        if (flag) {
-            errorComp.current.innerText = "Invalid GrNO"
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        } else {
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-    }, [grNo])
-
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/delStudent`, 'DELETE',{},"delStud") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="std">
-                                    Provide gr no of student to delete:
-                                </label>
-                                <input type="number" name="grNo" required placeholder="Enter Gr No here" onChange={(e) => { changeHandler(e) }} />
-                            </span>
-                            <div>
-                                <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                            </div>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/delStudent`, 'DELETE', {}, "delStud", errorComp, [setGrNo]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <FaCircleUser style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={grNo || ''} name="grNo" required placeholder=" " onChange={(e) => { changeHandler(e) }} />
+                                    <FloatingLabel>Enter Gr No of student you wish to delete:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
+                        <ButtonContainer>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                        </ButtonContainer>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {typeof(displayData)==="string"?<div style={{padding:"10px"}}>{displayData}</div>:<></>}
-                </SearchOutputSection>
             </SearchBoxSection>
+            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+                {typeof (displayData) === "string" && (displayData !== undefined || displayData !== null) ? <div>{displayData}</div> : <></>}
+            </SearchOutputSection>:<></>}
         </div>
     )
 }
@@ -451,7 +434,6 @@ export const StudentAddTab = (props) => {
     const [pwd, setPwd] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e, type) => {
-        e.preventDefault()
         switch (type) {
             case "password":
                 setPwd(e.target.value)
@@ -473,84 +455,64 @@ export const StudentAddTab = (props) => {
         }
     }
 
-    useEffect(() => {
-        const errarr = ["invalid gr no","passwords are needed to be 8 digits","standard shall have range of 1 - 12"]
-        let flagarr = [false,false,false]
-        if (pwd!==undefined&&pwd!==null&&(pwd.toString().length!==8)) flagarr[1] = true
-        if ((grNo<0||grNo>99999999)&&grNo!==undefined&&grNo!==null) flagarr[0] = true
-        if ((std<1||std>12)&&std!==undefined&&std!==null) flagarr[2] = true
-
-        let errstr = ""
-        let anyErr = false
-        flagarr.forEach((v,i)=>{
-            if (v) {
-                errstr += (errarr[i]+", ")
-                anyErr = true
-            }
-        })
-
-        if (anyErr) {
-            errorComp.current.innerText = errstr
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-            errorComp.current.style.display = "block"
-        }else{
-            buttonComp.current.style.cursor = "pointer"
-            buttonComp.current.removeAttribute("disabled")
-            errorComp.current.style.display = "none"
-        }
-
-    }, [pwd,std,grNo])
-
     return (
         <div>
             <SearchBoxSection>
                 < ToastContainer />
                 <SearchParamSection>
-                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/createStud`, 'POST',{"studName":name,"studPwd":pwd,"section":section,"std":std},"addStud") }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="section">
-                                    Provide Gr NO for student:
-                                </label>
-                                <input type="number" required name="grno" placeholder="Enter Gr No here" maxLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
-                            </span>
-                        </div>
+                    <SearchForm onSubmit={(e) => { fetchData(e, grNo, setGrNo, setDisplayData, `http://localhost:8090/${props.roleOfPerson}/createStud`, 'POST', { "studName": name, "studPwd": pwd, "section": section, "std": std }, "addStud", errorComp, [setGrNo, setName, setPwd, setSection, setStd]) }}>
+                        <TeacherInputTabContainer>
+                            <InputContainer>
+                                <FaCircleUser style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" value={grNo || ''} required name="grno" placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "grno") }} />
+                                    <FloatingLabel>Enter Gr No for new student :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}><h3>Fill further details for the student below:</h3></div>
                         <TeacherInputTabContainer>
-                            <label htmlFor="password">Provide password here: </label>
-                            <span>
-                                <input type="password" required name="password" placeholder="Password" maxLength={8} onChange={(e) => { changeHandler(e, "password") }} />
-                            </span>
-                            <label htmlFor="sname">
-                                    Provide name here:
-                            </label>
-                            <span>
-                            <input type="text" name="sname" required placeholder="Name" onChange={(e) => { changeHandler(e, "name") }} />
-                            </span>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaKey style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="password" value={pwd || ''} required name="password" placeholder=" " maxLength={8} onChange={(e) => { changeHandler(e, "password") }} />
+                                    <FloatingLabel>Enter Password for new student :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <FaAddressCard style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="text" name="sname" value={name || ''} required placeholder=" " onChange={(e) => { changeHandler(e, "name") }} />
+                                    <FloatingLabel>Enter name for new student :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
                         <TeacherInputTabContainer>
-                            <label htmlFor="section">Provide section here: </label>
-                            <span>
-                                <input type="text" name="section" required placeholder="Section" maxLength={2} onChange={(e) => { changeHandler(e, "section") }} />
-                            </span>
-                            <label htmlFor="std">
-                                    Provide standard here:
-                            </label>
-                            <span>
-                            <input type="number" name="std" required placeholder="Standard" onChange={(e) => { changeHandler(e, "std") }} />
-                            </span>
+                            <InputContainer style={{ width: "50%" }}>
+                                <MdWindow style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="text" name="section" value={section || ''} required placeholder=" " maxLength={2} onChange={(e) => { changeHandler(e, "section") }} />
+                                    <FloatingLabel>Enter section for new student :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <RiBookShelfLine style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="std" value={std || ''} required placeholder=" " onChange={(e) => { changeHandler(e, "std") }} />
+                                    <FloatingLabel>Enter standard for new student :</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
                         </TeacherInputTabContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                            <div>
-                                <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                            </div>
+                        <ButtonContainer>
+                            <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
+                        </ButtonContainer>
                     </SearchForm>
                 </SearchParamSection>
-                <SearchOutputSection>
-                    {typeof(displayData)==="string"?<div style={{padding:"10px"}}>{displayData}</div>:<></>}
-                </SearchOutputSection>
-                </SearchBoxSection>
+            </SearchBoxSection>
+            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+                {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
+            </SearchOutputSection>:<></>}
         </div>
     )
 }

@@ -1,7 +1,7 @@
 import styled from "styled-components";
 export const StyledNavbar = styled.div`
     padding: 5px 20px;
-    background: rgba(106, 106, 106, 0.04);
+    background: #e7e7e782;
     backdrop-filter: blur(10px);
     display: flex;
     flex-direction: row;
@@ -13,13 +13,13 @@ export const StyledNavbar = styled.div`
     position: sticky;
     top: 1rem;
     border-radius: 50px;
+    z-index: 20;
     `
 export const StyledNavbarSubTabs = styled.div`
     display: none;
-    background: #f1f1f1ff;
-    backdrop-filter: blur(20px);
+    background: #a8d6ffff;
+    backdrop-filter: blur(150px);
     width: max-content;
-    /* padding: 10px; */
     margin-top: 1rem;
     position: absolute;
     left: 0;
@@ -31,13 +31,16 @@ export const NavbarTabs = styled.button`
     border: none;
     cursor: pointer;
     &:hover{
-        background-color: #e3e3e3ff;
+        background-color: #d0e9ffff;
+        backdrop-filter: blur(150px);
     }
     /* margin-top: 1rem; */
 `
 export const StyledNavbarTabs = styled.div`
-        background: whitesmoke;
+        background: #e9f8ffff;
+        color: #4359ffff;
         vertical-align: middle;
+        border-radius: 15px;
         padding: 10px;
         display: inline-block;
         cursor: pointer;
@@ -51,11 +54,15 @@ export const StyledNavbarTabs = styled.div`
         &:hover svg {
             transform: rotateZ(180deg);
         }
+        &:hover{
+            background: #bbebffff;
+        }
 
         &:hover ${StyledNavbarSubTabs} {
             display: flex;
             flex-direction: column;
             justify-content: center;
             z-index: 10;
+            backdrop-filter: blur(150px);
         }
     `

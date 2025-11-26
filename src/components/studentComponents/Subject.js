@@ -1,7 +1,7 @@
 import { StyledButton } from "../../styled-components/styledButton"
 import { SubInfo, TableEntry } from "./Home"
 import { ErrorSpan, SearchBoxSection, SearchForm, SearchOutputSection, SearchParamSection } from "./SchoolRes"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { toast, ToastContainer } from "react-toastify"
 
 export const SubjectSearch = () => {
@@ -22,6 +22,19 @@ export const SubjectSearch = () => {
     }
     const fetchData = async (e) => {
         e.preventDefault()
+        const err = 'Grade/Std not allowed shall be between 1 and 12 inclusive'
+        let errOccur = false
+        if (grade != null && (grade < 1 || grade > 12)) errOccur = true
+        else errOccur = false
+        if (errOccur) {
+            errorComp.current.style.display = 'block'
+            errorComp.current.innerText = err
+            return;
+        }
+        else {
+            errorComp.current.innerText = ""
+            errorComp.current.style.display = 'none'
+        }
         try {
             const apiUrl = 'http://localhost:8090/student/displaySub';
             const queryParams = { "std": grade }
@@ -48,6 +61,16 @@ export const SubjectSearch = () => {
                 setDisplayData("no subjects found")
                 return
             }
+            toast.success("Fetched data successfully", {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+            });
             setDisplayData(res.output);
         } catch (err) {
             console.log(err.error);
@@ -64,32 +87,10 @@ export const SubjectSearch = () => {
                 theme: "light",
             });
         } finally{
+            setGrade(null)
             e.target.reset();
         }
     };
-
-    useEffect(() => {
-        const err = 'Grade/Std not allowed shall be between 1 and 12 inclusive'
-        let errOccur = false
-        if (grade != null && (grade < 1 || grade > 12)) errOccur = true
-        else errOccur = false
-        if (errOccur) {
-            errorComp.current.style.display = 'block'
-            errorComp.current.innerText = err
-            buttonComp.current.setAttribute("disabled", true)
-            buttonComp.current.style.cursor = "not-allowed"
-        }
-        else {
-            errorComp.current.innerText = ""
-            buttonComp.current.style.cursor = "pointer"
-            errorComp.current.style.display = 'none'
-            buttonComp.current.removeAttribute("disabled")
-        }
-    }, [grade])
-
-    useEffect(()=>{
-        console.log("useeffect",displayData);
-    },[displayData])
 
     return (
         <SearchBoxSection>
@@ -101,7 +102,7 @@ export const SubjectSearch = () => {
                             <label htmlFor="std">
                                 Provide grade of class you wish to check subject:
                             </label>
-                            <input type="number" name="std" placeholder="Enter standard here" onChange={(e) => { changeHandler(e, "grade") }} />
+                            <input type="number" value={grade||''} name="std" placeholder="Enter standard here" onChange={(e) => { changeHandler(e, "grade") }} />
                         </span>
                         <div>
                             <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
