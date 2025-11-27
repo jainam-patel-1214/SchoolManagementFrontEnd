@@ -11,6 +11,7 @@ import { FaIdCardAlt } from "react-icons/fa"
 import { FaAddressCard, FaKey } from "react-icons/fa6"
 import { RiBookShelfLine, RiContactsBook2Fill } from "react-icons/ri"
 import { MdWindow } from "react-icons/md"
+import { TableHeader } from "../../styled-components/TableComponents"
 
 export const TeacherInputTabContainer = styled.div`
     display: flex;
@@ -201,17 +202,16 @@ export const TeacherPerformance = (props) => {
                     <PerformanceWindow>
                         {displayData?.length > 0 ? <>
                             <h2>Performance among teacher's peers</h2>
-                            <div style={{ border: "1px solid black", width: "100%" }}>
-                                <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
+                                <div style={{ border: "1px solid #a9a9a9ff", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
                                     <SubInfo style={{ width: "100%" }}>
                                         <thead>
                                             <tr>
-                                                <th>Teacher Id</th>
-                                                <th>Teacher Name</th>
-                                                <th>Standard Allocated</th>
-                                                <th>Subject Allocated</th>
-                                                <th>Total Practical Marks</th>
-                                                <th>Total Theory Marks</th>
+                                                <TableHeader>Teacher Id</TableHeader>
+                                                <TableHeader>Teacher Name</TableHeader>
+                                                <TableHeader>Standard Allocated</TableHeader>
+                                                <TableHeader>Subject Allocated</TableHeader>
+                                                <TableHeader>Total Practical Marks</TableHeader>
+                                                <TableHeader>Total Theory Marks</TableHeader>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -230,7 +230,6 @@ export const TeacherPerformance = (props) => {
                                         </tbody>
                                     </SubInfo>
                                 </div>
-                            </div>
                         </> : displayData === null || displayData === undefined ? <></> : <>No performance data</>}
                     </PerformanceWindow>
                 }

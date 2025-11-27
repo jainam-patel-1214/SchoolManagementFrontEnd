@@ -3,6 +3,9 @@ import { useState, useEffect, useRef } from "react"
 import { Label, LabelValue, StudentHomeSection, StudentInfo, SubInfo, TableEntry, Value } from "../studentComponents/Home"
 import { ToastContainer, toast } from "react-toastify"
 import { ErrorSpan, SearchForm } from "../studentComponents/SchoolRes"
+import { StyledNavbar } from "../../styled-components/styledNav"
+import imgpfp from '../../assets/pfp.webp'
+
 export const AdminHome = (props) => {
     const [displayData, setDisplayData] = useState({})
 
@@ -31,24 +34,26 @@ export const AdminHome = (props) => {
             <StudentHomeSection>
                 < ToastContainer />
                 <StudentInfo style={{ width: "100%" }}>
-                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", border: "2px double blue", padding: "1rem" }}>
-                        <div>
-                            <h3>Credentials:</h3>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-evenly", width: "100%" }}>
+                    <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", padding: "1rem" }}>
+                        <h3 style={{ marginBottom: "1rem"}}><strong>User Profile:</strong></h3>
+                        <StyledNavbar variant="inbody">
+                            <div>
+                            <img src={imgpfp} alt="pfp" style={{height:"100px",width:"100px",objectFit:"contain"}}></img>
+                            <LabelValue>
+                                <Value style={{ margin: "1rem auto"}}><strong>{displayData.Name}</strong></Value>
+                            </LabelValue>
+                            </div>
+                            <div>
                             <LabelValue>
                                 <Label><strong>Id:</strong></Label>
                                 <Value>{displayData.Id}</Value>
                             </LabelValue>
                             <LabelValue>
-                                <Label><strong>Name:</strong></Label>
-                                <Value>{displayData.Name}</Value>
-                            </LabelValue>
-                            <LabelValue>
                                 <Label><strong>Password:</strong></Label>
                                 <Value>{displayData.Password}</Value>
                             </LabelValue>
-                        </div>
+                            </div>
+                        </StyledNavbar>
                     </div>
                 </StudentInfo>
             </StudentHomeSection>

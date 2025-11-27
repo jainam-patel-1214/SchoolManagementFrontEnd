@@ -10,6 +10,7 @@ import { FaOrcid } from "react-icons/fa6";
 import { LuBookA } from "react-icons/lu";
 import { IoIosRibbon } from "react-icons/io";
 import { FloatingInput, FloatingLabel, InputWrapper } from "../../styled-components/InputComp"
+import { TableHeader } from "../../styled-components/TableComponents"
 
 export const TeacherInputTabContainer = styled.div`
     display: flex;
@@ -164,6 +165,18 @@ export const SubTab = (props) => {
     const changeHandler = (e) => {
         setGrade(Number(e.target.value))
     }
+    const SuperScriptText = (num)=>{
+        switch (num) {
+            case 1:
+                return "st";
+            case 2:
+                return "nd";
+            case 3:
+                return "rd";
+            default:
+                return "th";
+        }
+    }
 
     return (
         <div>
@@ -189,13 +202,15 @@ export const SubTab = (props) => {
             </SearchBoxSection>
             {displayData!==undefined&&displayData!==null?<SearchOutputSection>
                 {(typeof displayData === 'string' && displayData === "no subjects found") ? <>No Subjects Found</> : <>
-                    {displayData?.length > 0 ? <SubInfo style={{ border: "1px solid black" }}>
+                    {displayData?.length > 0 ? <div style={{ margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column" }}>
+                                        <h3 style={{ textAlign: "center",margin:"0",marginBottom:"1rem" }}>List of subject in {displayData[0].level} <sup>{SuperScriptText(Number(displayData[0].level))}</sup> standard</h3>
+                    <SubInfo style={{ border: "1px solid #a9a9a9ff",margin:"auto" }}>
                         <thead>
                             <tr>
-                                <th>Subject Id</th>
-                                <th>Name</th>
-                                <th>Standard</th>
-                                <th>Credits</th>
+                                <TableHeader>Subject Id</TableHeader>
+                                <TableHeader>Name</TableHeader>
+                                <TableHeader>Standard</TableHeader>
+                                <TableHeader>Credits</TableHeader>
                             </tr>
                         </thead>
                         <tbody>
@@ -210,7 +225,7 @@ export const SubTab = (props) => {
                                 )
                             })}
                         </tbody>
-                    </SubInfo> : <></>}</>
+                    </SubInfo></div> : <></>}</>
                 }
             </SearchOutputSection>:<></>}
         </div>

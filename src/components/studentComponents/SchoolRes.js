@@ -3,6 +3,12 @@ import styled from "styled-components"
 import { useState, useRef } from "react"
 import { StyledButton } from "../../styled-components/styledButton"
 import { SubInfo, TableEntry } from "./Home"
+import { ButtonContainer, InputContainer, StudentResultContainer, TeacherInputTabContainer } from "../teacherComponents/StudentsTab"
+import { FloatingInput, FloatingLabel, InputWrapper } from "../../styled-components/InputComp"
+import { TiSortAlphabetically } from "react-icons/ti"
+import { RiBookShelfLine } from "react-icons/ri"
+import { PiLineSegmentsBold } from "react-icons/pi"
+import { TableHeader } from "../../styled-components/TableComponents"
 
 export const SearchBoxSection = styled.div`
     display: flex;
@@ -14,7 +20,6 @@ export const SearchBoxSection = styled.div`
     background-color: #e9f8ffff;
     border-radius: 50px;
     border: 1px dotted blue;
-    /* background: rgba(216, 231, 255, 1); */
 `
 export const SearchParamSection = styled.div`
     width: 100%;
@@ -29,7 +34,7 @@ export const SearchOutputSection = styled.div`
     padding: 5px 20px;
     background-color: #c8ffde95;
     border-radius: 50px;
-    border: 2px solid #2d3818;
+    border: 2px solid #8fb352;
 `
 export const SearchForm = styled.form`
   display: flex;
@@ -58,7 +63,7 @@ export const ErrorSpan = styled.div`
 `
 
 
-export const SchoolResult = () => {
+export const SchoolResult = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
     const [section, setSection] = useState(null)
@@ -105,7 +110,6 @@ export const SchoolResult = () => {
                 errExist = true
                 ErrStr += err[index]
             }
-            console.log("stringgg", ErrStr);
         })
         if (errExist) {
             errorComp.current.style.display = 'block'
@@ -117,28 +121,45 @@ export const SchoolResult = () => {
             errorComp.current.style.display = 'none'
         }
         try {
-            const apiUrl = 'http://localhost:8090/student/display';
-            const queryParams = { "viewByStd": grade, "viewBySection": section, "minPercent": minMark, "maxPercent": maxMark }
-            const url = new URL(apiUrl);
-            url.search = new URLSearchParams(queryParams).toString();
-
-            const resp = await fetch(url, {
+            const apiUrl = `http://localhost:8090/${props.roleOfPerson}/display`;
+            const params = { "viewByStd": grade, "viewBySection": section, "minPercent": minMark, "maxPercent": maxMark }
+            const queryParams = {}
+            let elem;
+            for (elem of Object.keys(params)) {
+                if (params[elem]!==null) {
+                    queryParams[elem] = params[elem]
+                }
+            }
+            const resp = await fetch(apiUrl+"?"+new URLSearchParams(queryParams), {
                 method: 'GET',
                 credentials: 'include',
             });
             const res = await resp.json();
-            console.log(res.output);
-            toast.success(res.output || "data fetched", {
-                position: "top-right",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: false,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-            })
-            setDisplayData(res.output);
+            if (res.output) {
+                toast.success(res.output || "data fetched", {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                })
+                setDisplayData(res.output);
+            } else{
+                toast.success(res.error || "data fetched", {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                })
+                setDisplayData(res.error);
+            }
         } catch (err) {
             console.log(err);
             // toast.error(err.error || "Something went wrong", {
@@ -155,6 +176,8 @@ export const SchoolResult = () => {
             });
         } finally {
             cleanup()
+            console.log(e);
+            
             e.target.reset();
         }
     };
@@ -167,51 +190,65 @@ export const SchoolResult = () => {
     }
 
     return (
+        <div>
         <SearchBoxSection>
             < ToastContainer />
             <SearchParamSection>
                 <div>
                     <SearchForm action="" onSubmit={(e) => { fetchData(e) }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                            <span>
-                                <label htmlFor="section">
-                                    Provide Class Section:
-                                </label>
-                                <input type="text" value={section||''} name="section" placeholder="Enter section here" maxLength={2} onChange={(e) => { changeHandler(e, "section") }} />
-                            </span>
-                            {/* {viewByStd,viewBySection,minPercent,maxPercent} */}
-                            <span>
-                                <label htmlFor="std">
-                                    Provide grade of class you wish to check result:
-                                </label>
-                                <input type="number" name="std" value={grade||''} placeholder="Enter standard here" onChange={(e) => { changeHandler(e, "grade") }} required />
-                            </span>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "flex-start", margin: "1rem", alignItems: "center" }}>
-                            <label htmlFor="minpercent">Enter a range of marks you wish to filter : </label>
-                            <span>
-                                <input type="number" name="minpercent" value={minMark||''} placeholder="min percentage" onChange={(e) => { changeHandler(e, "min") }} />
-                                <input type="number" name="maxpercent" value={maxMark||''} placeholder="max percentage" onChange={(e) => { changeHandler(e, "max") }} />
-                            </span>
-                        </div>
+                        <TeacherInputTabContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <RiBookShelfLine style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="std" value={grade || ''} placeholder=" " onChange={(e) => { changeHandler(e, "grade") }} required />
+                                    <FloatingLabel>Provide grade of class you wish to see result:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <TiSortAlphabetically style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="text" value={section || ''} name="section" placeholder=" " maxLength={2} onChange={(e) => { changeHandler(e, "section") }} />
+                                    <FloatingLabel>Provide Class Section you wish to see result:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
+                        <TeacherInputTabContainer>
+                            <label>Enter a range of marks you wish to filter : </label>
+                            <InputContainer style={{ width: "50%" }}>
+                                <PiLineSegmentsBold style={{ fontSize: "xx-large" }} />
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="minpercent" value={minMark || ''} placeholder=" " onChange={(e) => { changeHandler(e, "min") }} />
+                                    <FloatingLabel>Min marks:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                            <InputContainer style={{ width: "50%" }}>
+                                <InputWrapper>
+                                    <FloatingInput type="number" name="maxpercent" value={maxMark || ''} placeholder=" " onChange={(e) => { changeHandler(e, "max") }} />
+                                    <FloatingLabel>Max marks:</FloatingLabel>
+                                </InputWrapper>
+                            </InputContainer>
+                        </TeacherInputTabContainer>
                         <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
-                        <div>
+                        <ButtonContainer>
                             <StyledButton ref={buttonComp} type="submit">Submit</StyledButton>
-                        </div>
+                        </ButtonContainer>
                     </SearchForm>
                 </div>
             </SearchParamSection>
-            {displayData === "no result found" ? <span style={{ background: "#fa6c61", padding: "5px" }}>No Results Found</span> : <SearchOutputSection>
+            </SearchBoxSection>
+            {typeof(displayData)!=='string' && displayData!==null && displayData!==undefined ?
+                <SearchOutputSection style={{paddingBottom:"1.5rem"}}>
+                <h3 style={{ textAlign: "center" }}>List of students for requested filter</h3>
                 <SubInfo style={{ width: "100%" }}>
                     <thead>
                         <tr>
-                            <th>Student Name</th>
-                            <th>Standard</th>
-                            <th>Section</th>
-                            <th>Subject Name</th>
-                            <th>Practical Marks</th>
-                            <th>Theory Marks</th>
-                            <th>Grade</th>
+                            <TableHeader>Student Name</TableHeader>
+                            <TableHeader>Standard</TableHeader>
+                            <TableHeader>Section</TableHeader>
+                            <TableHeader>Subject Name</TableHeader>
+                            <TableHeader>Practical Marks</TableHeader>
+                            <TableHeader>Theory Marks</TableHeader>
+                            <TableHeader>Grade</TableHeader>
                         </tr>
                     </thead>
                     <tbody>
@@ -230,7 +267,7 @@ export const SchoolResult = () => {
                         })}
                     </tbody>
                 </SubInfo>
-            </SearchOutputSection>}
-        </SearchBoxSection>
+                </SearchOutputSection>:<>{typeof(displayData)==='string'?<SearchOutputSection style={{ background: "#fa6c61", padding: "5px" }}>{displayData}</SearchOutputSection>:<></>} </>}
+        </div>
     )
 }

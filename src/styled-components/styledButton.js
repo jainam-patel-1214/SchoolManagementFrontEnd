@@ -22,3 +22,18 @@ export const StyledInput = styled.input`
     margin: 10px;
 
 `
+export const DownloadBtn = styled.button`
+    padding: 10px 30px;
+    cursor: pointer;
+    vertical-align: middle;
+    border: none;
+    border-radius: 15px;
+    margin-right: 15px;
+    background-color: #2ad2008a;
+    box-shadow: 10px 10px 20px #9d9d9d82;
+    height: fit-content;
+    transition: .3s ease-in-out;
+    &:hover{
+        background-color: #30f0008a;
+    }
+`

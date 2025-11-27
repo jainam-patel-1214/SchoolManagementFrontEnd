@@ -1,7 +1,8 @@
-import styled from "styled-components"
 import { useState, useEffect } from "react"
 import { Label, LabelValue, PerformanceWindow, StudentHomeSection, StudentInfo, SubInfo, TableEntry, Value } from "../studentComponents/Home"
 import { ToastContainer, toast } from "react-toastify"
+import { ProfileComponent, ProfileTabs, TableHeader } from "../../styled-components/TableComponents"
+import { SearchOutputSection } from "../studentComponents/SchoolRes"
 export const TeacherHome = (props) => {
     const [displayData, setDisplayData] = useState({})
     const [displayReport, setDisplayReport] = useState({})
@@ -49,8 +50,8 @@ export const TeacherHome = (props) => {
         <div>
             <StudentHomeSection>
                 < ToastContainer />
-                <StudentInfo style={{ width: "100%" }}>
-                    <div style={{ display: "flex", justifyContent: "space-evenly" }}>
+                <ProfileComponent>
+                    <ProfileTabs>
                         <LabelValue>
                             <Label><strong>Id:</strong></Label>
                             <Value>{displayData.Id}</Value>
@@ -63,8 +64,8 @@ export const TeacherHome = (props) => {
                             <Label><strong>Password:</strong></Label>
                             <Value>{displayData.Password}</Value>
                         </LabelValue>
-                        {/* </div>
-                    <div style={{display:"flex",justifyContent:"space-evenly"}}> */}
+                        </ProfileTabs>
+                    <ProfileTabs>
                         <LabelValue>
                             <Label><strong>Subject allocated Id:</strong></Label>
                             <Value>{displayData.SubId}</Value>
@@ -73,24 +74,27 @@ export const TeacherHome = (props) => {
                             <Label><strong>Class Allocated:</strong></Label>
                             <Value>{displayData.Std + displayData.Section}</Value>
                         </LabelValue>
-                    </div>
-                </StudentInfo>
+                        <LabelValue>
+                            <Label><strong>Total Students:</strong></Label>
+                            <Value>10</Value>
+                        </LabelValue>
+                    </ProfileTabs>
+                </ProfileComponent>
             </StudentHomeSection>
+            <SearchOutputSection>
             <PerformanceWindow>
                 <h2>Performance among peers</h2>
-                <div style={{ border: "1px solid black", width: "100%" }}>
-                    <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
-                        <h3>Compare Your Stats</h3>
-                        {displayReport?.length > 0 ? <>
+                        {displayReport?.length > 0 ? 
+                        <div style={{ border: "1px solid #a9a9a9ff", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
                             <SubInfo style={{ width: "100%" }}>
                                 <thead>
                                     <tr>
-                                        <th>Teacher Id</th>
-                                        <th>Teacher Name</th>
-                                        <th>Standard Allocated</th>
-                                        <th>Subject Allocated</th>
-                                        <th>Total Practical Marks</th>
-                                        <th>Total Theory Marks</th>
+                                        <TableHeader>Teacher Id</TableHeader>
+                                        <TableHeader>Teacher Name</TableHeader>
+                                        <TableHeader>Standard Allocated</TableHeader>
+                                        <TableHeader>Subject Allocated</TableHeader>
+                                        <TableHeader>Total Practical Marks</TableHeader>
+                                        <TableHeader>Total Theory Marks</TableHeader>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -107,11 +111,10 @@ export const TeacherHome = (props) => {
                                         )
                                     })}
                                 </tbody>
-                            </SubInfo>
-                        </> : <>No performance report</>}
-                    </div>
-                </div>
+                            </SubInfo> 
+                            </div> : <>No performance report</>}
             </PerformanceWindow>
+            </SearchOutputSection>
         </div>
     )
 }

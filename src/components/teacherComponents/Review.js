@@ -2,12 +2,14 @@ import { ErrorSpan, SearchBoxSection, SearchForm, SearchParamSection } from "../
 import { toast, ToastContainer } from "react-toastify"
 import { StyledButton } from "../../styled-components/styledButton"
 import { useRef, useState } from "react"
+import { InputContainer, TeacherInputTabContainer } from "./StudentsTab"
+import { FloatingInput, FloatingLabel, InputWrapper } from "../../styled-components/InputComp"
+import { MdRateReview } from "react-icons/md"
+import { FaCircleUser } from "react-icons/fa6"
 
 export const ReviewTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
-    const inp1 = useRef(null)
-    const inp2 = useRef(null)
     const [grNO, setGrNo] = useState(0)
     // const [rerender, setrerender] = useState(0)
     const [comment, setComment] = useState(null)
@@ -26,13 +28,13 @@ export const ReviewTab = (props) => {
     }
     const fetchData = async (e) => {
         e.preventDefault()
-        let flagarr = [false,false]
+        let flagarr = [false, false]
         let errarr = ["Please provide a comment to add, ", "Invalid GrNO, "]
         if (comment.length <= 0) flagarr[0] = true
         if (grNO <= 0 || grNO > 99999999) flagarr[1] = true
         let errstr = ""
-        flagarr.forEach((v,i)=>{
-            if (v==true) {
+        flagarr.forEach((v, i) => {
+            if (v === true) {
                 errstr += errarr[i]
             }
         })
@@ -91,7 +93,7 @@ export const ReviewTab = (props) => {
                 progress: undefined,
                 theme: "light",
             });
-        } finally{
+        } finally {
             setComment(null)
             setGrNo(null)
             e.target.reset();
@@ -103,22 +105,26 @@ export const ReviewTab = (props) => {
             < ToastContainer />
             <SearchParamSection>
                 <SearchForm onSubmit={(e) => { fetchData(e) }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", margin: "1rem", alignItems: "center" }}>
-                        <span>
-                            <label htmlFor="std">
-                                Provide Gr NO. of the student:
-                            </label>
-                            <input type="number" value={grNO||""} required name="grno" placeholder="Enter gr. no here" onChange={(e) => { changeHandler(e, "grno") }}/>
-                            <label htmlFor="std">
-                                Enter a review:
-                            </label>
-                            <input type="text" required name="review" value={comment||""} placeholder="Provide review here" onChange={(e) => { changeHandler(e, "comment") }} maxLength={254}/>
-                        </span>
-                        <div>
-                            <StyledButton ref={buttonComp} >Submit</StyledButton>
-                        </div>
-                    </div>
+                    <TeacherInputTabContainer>
+                        <InputContainer style={{ width: "50%" }}>
+                            <FaCircleUser style={{ fontSize: "xx-large" }} />
+                            <InputWrapper>
+                                <FloatingInput type="number" value={grNO || ""} required name="grno" placeholder=" " onChange={(e) => { changeHandler(e, "grno") }} />
+                                <FloatingLabel>Provide Gr NO. of the student:</FloatingLabel>
+                            </InputWrapper>
+                        </InputContainer>
+                        <InputContainer style={{ width: "50%" }}>
+                            <MdRateReview style={{ fontSize: "xx-large" }} />
+                            <InputWrapper>
+                                <FloatingInput type="text" required name="review" value={comment || ""} placeholder=" " onChange={(e) => { changeHandler(e, "comment") }} maxLength={254} />
+                                <FloatingLabel>Enter a review:</FloatingLabel>
+                            </InputWrapper>
+                        </InputContainer>
+                    </TeacherInputTabContainer>
                     <ErrorSpan id="minmaxerror" ref={errorComp}></ErrorSpan>
+                    <buttonComp>
+                        <StyledButton ref={buttonComp} >Submit</StyledButton>
+                    </buttonComp>
                 </SearchForm>
             </SearchParamSection>
         </SearchBoxSection>

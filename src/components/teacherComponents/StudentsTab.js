@@ -1,13 +1,17 @@
 import styled from "styled-components"
 import { ErrorSpan, SearchBoxSection, SearchForm, SearchOutputSection, SearchParamSection } from "../studentComponents/SchoolRes"
 import { toast, ToastContainer } from "react-toastify"
-import { StyledButton } from "../../styled-components/styledButton"
-import { Label, LabelValue, PerformanceWindow, StudentInfo, SubInfo, TableEntry, Value } from "../studentComponents/Home"
-import { Fragment, useRef, useState } from "react"
+import { DownloadBtn, StyledButton } from "../../styled-components/styledButton"
+import { Label, LabelValue, PerformanceWindow, StudentInfo, StudentInfoSegment, SubInfo, TableEntry, Value } from "../studentComponents/Home"
+import { Fragment, useEffect, useRef, useState } from "react"
 import { FloatingInput, FloatingLabel, InputWrapper } from "../../styled-components/InputComp"
-import { FaAddressCard, FaCircleUser, FaKey } from "react-icons/fa6";
+import { FaAddressCard, FaCircleUser, FaKey, FaRegCommentDots } from "react-icons/fa6";
 import { RiBookShelfLine } from "react-icons/ri"
 import { MdWindow } from "react-icons/md"
+import { TableHeader } from "../../styled-components/TableComponents"
+import { GradeCalculator } from "../../utils/gradeCalculator"
+import { FaFileDownload } from "react-icons/fa"
+import { jsPDF } from "jspdf";
 
 
 export const TeacherInputTabContainer = styled.div`
@@ -15,6 +19,14 @@ export const TeacherInputTabContainer = styled.div`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+`
+export const StudentResultContainer = styled.div`
+    border: 1px solid #a9a9a9ff;
+    margin: 10px;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 `
 export const InputContainer = styled.div`
     display: flex;
@@ -31,6 +43,53 @@ export const ButtonContainer = styled.div`
     margin-right: 10px;
 `
 
+export const CommentsContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    margin: 10px auto;
+    width: 70%;
+`
+export const CommentTeacher = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    width: 27%;
+    border: 1px solid #a9a9a9ff;
+    border-radius: 10px;
+    box-shadow: 2px 2px 2px 2px #0000002a;
+    padding: 5px;
+    h2{
+        margin: 0;
+        font-weight: bold;
+    }
+    p{
+        margin: 0;
+        font-weight: 300;
+    }
+`
+export const CommentContent = styled.div`
+    display: flex;
+    width: 65%;
+    flex-direction: row;
+    align-items: center;
+    border: 1px solid #a9a9a9ff;
+    border-radius: 10px;
+    box-shadow: 2px 2px 2px 2px #0000002a;
+    padding: 5px 10px;
+    background-color: #a7caff98;
+
+    svg{
+        margin-right: 10px;
+    }
+`
+
+export const DownloadHandler = async (e, studentName, content) => {
+    e.preventDefault()
+    const doc = new jsPDF()
+    await doc.html(content).then(() => {
+        doc.save(`${studentName}_result.pdf`)
+    })
+}
 
 const fetchData = async (e, grNo, setter, setDisplayData, apiUrl, methodtype, dataObj, todo, errorComp, cleanup) => {
     e.preventDefault()
@@ -175,11 +234,22 @@ const errorToast = (str) => {
 export const StudentTab = (props) => {
     const errorComp = useRef(null)
     const buttonComp = useRef(null)
+    const performanceComponent = useRef(null)
     const [grNo, setGrNo] = useState(null)
     const [displayData, setDisplayData] = useState(null)
     const changeHandler = (e) => {
         setGrNo(e.target.value)
     }
+    const [totalMsg, setTotalMsg] = useState("");
+    useEffect(() => {
+        let sum = 0
+        displayData?.MarkInfo?.forEach(e => {
+            console.log(Number(e.practicalMM) + Number(e.theoryMM));
+            sum += Number(e.practicalMM) + Number(e.theoryMM)
+        })
+        const res = GradeCalculator((sum * 100) / (100 * displayData?.MarkInfo?.length))
+        setTotalMsg(res)
+    }, [displayData])
 
     return (
         <div>
@@ -203,67 +273,67 @@ export const StudentTab = (props) => {
                     </SearchForm>
                 </SearchParamSection>
             </SearchBoxSection>
-            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+            {displayData !== undefined && displayData !== null ? <SearchOutputSection>
                 {(displayData === undefined || displayData === null) ? <></> :
                     <>{(typeof displayData === 'string') ? <span style={{ padding: "10px" }}>{displayData}</span> :
                         <Fragment>
                             <StudentInfo>
-                                <LabelValue>
-                                    <Label><strong>Name:</strong></Label>
-                                    <Value>{displayData.StudData.Name}</Value>
-                                </LabelValue>
-                                <LabelValue>
-                                    <Label><strong>Standard:</strong></Label>
-                                    <Value>{displayData.StudData.Std}</Value>
-                                </LabelValue>
-                                <LabelValue>
-                                    <Label><strong>Password:</strong></Label>
-                                    <Value>{displayData.StudData.Password}</Value>
-                                </LabelValue>
-                                <LabelValue>
-                                    <Label><strong>Section:</strong></Label>
-                                    <Value>{displayData.StudData.Section}</Value>
-                                </LabelValue>
+                                <StudentInfoSegment>
+                                    <LabelValue>
+                                        <Label><strong>Name:</strong></Label>
+                                        <Value>{displayData.StudData.Name}</Value>
+                                    </LabelValue>
+                                    <LabelValue>
+                                        <Label><strong>Standard:</strong></Label>
+                                        <Value>{displayData.StudData.Std}</Value>
+                                    </LabelValue>
+                                </StudentInfoSegment>
+                                <StudentInfoSegment>
+                                    <LabelValue>
+                                        <Label><strong>Password:</strong></Label>
+                                        <Value>{displayData.StudData.Password}</Value>
+                                    </LabelValue>
+                                    <LabelValue>
+                                        <Label><strong>Section:</strong></Label>
+                                        <Value>{displayData.StudData.Section}</Value>
+                                    </LabelValue>
+                                </StudentInfoSegment>
                             </StudentInfo>
-                            <PerformanceWindow>
-                                <h2>Report Card</h2>
-                                <div style={{ border: "1px solid black", width: "100%" }}>
-                                    <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
-                                        <h3>Comments</h3>
+                            <PerformanceWindow ref={performanceComponent}>
+                                <h2 style={{ textDecoration: "underline", textDecorationColor: "#69a5ff" }}>Student Report Card</h2>
+                                <div style={{ border: "1px solid #69a5ff", width: "100%" }}>
+                                    <div style={{ border: "1px solid grey", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
+                                        <h3>Teachers' comment</h3>
                                         {displayData.CommentInfo?.length > 0 ? <>
-                                            <SubInfo style={{ width: "100%" }}>
-                                                <thead>
-                                                    <tr>
-                                                        <th>Teacher Id</th>
-                                                        <th>Teacher Name</th>
-                                                        <th>Review</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {displayData.CommentInfo?.map((element, index) => {
-                                                        return (
-                                                            <tr key={index}>
-                                                                <TableEntry>{element.tId}</TableEntry>
-                                                                <TableEntry>{element.tName}</TableEntry>
-                                                                <TableEntry>{element.comment}</TableEntry>
-                                                            </tr>
-                                                        )
-                                                    })}
-                                                </tbody>
-                                            </SubInfo>
+                                            <CommentsContainer>
+                                                {displayData.CommentInfo?.map((element, index) => {
+                                                    return (
+                                                        <div key={index} style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", margin: "3px 0" }}>
+                                                            <CommentTeacher>
+                                                                <h2>{element.tName}</h2>
+                                                                <p>ID:{element.tId}</p>
+                                                            </CommentTeacher>
+                                                            <CommentContent>
+                                                                <FaRegCommentDots />
+                                                                <p>Review:&nbsp;{element.comment}</p>
+                                                            </CommentContent>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </CommentsContainer>
                                         </> : <>No review made by any teacher</>}
                                     </div>
-                                    <div style={{ border: "1px solid black", margin: "10px", padding: "1rem", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
-                                        <h3>Performance</h3>
+                                    <StudentResultContainer>
+                                        <h3 style={{ textAlign: "center" }}>Academic Performance</h3>
                                         {displayData.MarkInfo?.length > 0 ? <>
                                             <SubInfo style={{ width: "100%" }}>
                                                 <thead>
                                                     <tr>
-                                                        <th>Subject Id</th>
-                                                        <th>Subject Name</th>
-                                                        <th>Practical Marks</th>
-                                                        <th>Theory Marks</th>
-                                                        <th>Grade</th>
+                                                        <TableHeader>Subject Id</TableHeader>
+                                                        <TableHeader>Subject Name</TableHeader>
+                                                        <TableHeader>Practical Marks</TableHeader>
+                                                        <TableHeader>Theory Marks</TableHeader>
+                                                        <TableHeader>Grade</TableHeader>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -281,13 +351,17 @@ export const StudentTab = (props) => {
                                                 </tbody>
                                             </SubInfo>
                                         </> : <>No entry of marks scroed in exam by any teacher</>}
-                                    </div>
+                                    </StudentResultContainer>
                                 </div>
                             </PerformanceWindow>
+                            <div style={{ border: "1px solid #a9a9a9ff", display: "flex", flexDirection: "row", justifyContent: "space-between", margin: "1rem auto", alignItems: "center", width: "97%" }}>
+                                <p style={{ textAlign: "left", marginLeft: "3px" }}><strong><i>Result:&nbsp;</i></strong>{totalMsg}</p>
+                                <DownloadBtn onClick={(e) => { DownloadHandler(e, displayData.StudData.Name, performanceComponent.current.innerHTML) }}><FaFileDownload /> &nbsp;Download</DownloadBtn>
+                            </div>
                         </Fragment>
                     }</>
                 }
-            </SearchOutputSection>:<></>}
+            </SearchOutputSection> : <></>}
         </div>
     )
 }
@@ -378,9 +452,9 @@ export const StudentEditTab = (props) => {
                     </SearchForm>
                 </SearchParamSection>
             </SearchBoxSection>
-            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+            {displayData !== undefined && displayData !== null ? <SearchOutputSection>
                 {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
-            </SearchOutputSection>:<></>}
+            </SearchOutputSection> : <></>}
         </div>
     )
 }
@@ -417,9 +491,9 @@ export const StudentDelTab = (props) => {
                     </SearchForm>
                 </SearchParamSection>
             </SearchBoxSection>
-            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+            {displayData !== undefined && displayData !== null ? <SearchOutputSection>
                 {typeof (displayData) === "string" && (displayData !== undefined || displayData !== null) ? <div>{displayData}</div> : <></>}
-            </SearchOutputSection>:<></>}
+            </SearchOutputSection> : <></>}
         </div>
     )
 }
@@ -510,9 +584,9 @@ export const StudentAddTab = (props) => {
                     </SearchForm>
                 </SearchParamSection>
             </SearchBoxSection>
-            {displayData!==undefined && displayData!==null?<SearchOutputSection>
+            {displayData !== undefined && displayData !== null ? <SearchOutputSection>
                 {typeof (displayData) === "string" ? <div style={{ padding: "10px" }}>{displayData}</div> : <></>}
-            </SearchOutputSection>:<></>}
+            </SearchOutputSection> : <></>}
         </div>
     )
 }

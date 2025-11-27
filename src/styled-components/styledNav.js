@@ -7,13 +7,19 @@ export const StyledNavbar = styled.div`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    width: 90%;
+    width: ${props => {
+    return props.variant === 'inbody'
+        ? "-webkit-fill-available"
+        : "90%"
+}};
+
     margin: auto;
     margin-bottom: 1rem;
     position: sticky;
     top: 1rem;
     border-radius: 50px;
-    z-index: 20;
+    
+    z-index: ${(props)=>{return props.variant==='inbody'?1:20}};
     `
 export const StyledNavbarSubTabs = styled.div`
     display: none;
